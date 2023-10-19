@@ -24,7 +24,7 @@ def bird_eye_view(image):
     # get image size
     image_size = (image.shape[1], image.shape[0])
     # source points of the image 640 x 480
-    src = np.float32([[80, 300], [400, 300],
+    src = np.float32([[240, 300], [400, 300],
                         [640, 480], [0, 480]])
     # destination points of the image 640, 480
     dst = np.float32([[0, 0], [640, 0],
@@ -34,21 +34,20 @@ def bird_eye_view(image):
     # get bird's eye view
     warped = cv2.warpPerspective(image, M, image_size)
 
-    cv2.imshow('warped', warped)
     return warped
 
 # Get all image in image folder
-image_list = os.listdir('image')
+image_list = os.listdir('Tuan/image')
 
 for image_name in image_list:
-    image = cv2.imread('image/' + image_name)
+    image = cv2.imread('Tuan/image/' + image_name)
+
+    # convert image to RGB
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
     # resize image to 640x480
     image = cv2.resize(image, (640, 480))
     result = frame_processor(image)
-
-    # plt.imshow(image)
-    # plt.show()
 
     cv2.imshow('image', image)
     cv2.imshow('result', result)
