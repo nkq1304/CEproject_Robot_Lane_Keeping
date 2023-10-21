@@ -15,6 +15,10 @@ def frame_processor(image):
     result = combined
 
     left_fit, right_fit, nonzerox, nonzeroy, left_lane_inds, right_lane_inds = lf.line_fit(result)
+    
+    if left_fit is None or right_fit is None:
+        return image
+    
     lf.draw_poly_lines(result, left_fit, right_fit, nonzerox, nonzeroy)
     left_curve, right_curve = lf.calc_curve(left_lane_inds, right_lane_inds, nonzerox, nonzeroy)
 
@@ -67,7 +71,7 @@ for image_name in image_list:
     cv2.imshow('result', result)
     cv2.imwrite('Tuan/result/' + image_name, result)
 
-    if cv2.waitKey(50) & 0xFF == ord('q'):
+    if cv2.waitKey(10) & 0xFF == ord('q'):
         break
 
 

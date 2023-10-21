@@ -76,14 +76,15 @@ def line_fit(binary_image):
     rightx = nonzerox[right_lane_inds]
     righty = nonzeroy[right_lane_inds]
 
-    # Fit a second order polynomial to each
-    left_fit = np.polyfit(lefty, leftx, 2)
-    right_fit = np.polyfit(righty, rightx, 2)
+    left_fit = None
+    right_fit = None
 
-    # Generate x and y values for plotting
-    ploty = np.linspace(0, binary_image.shape[0]-1, binary_image.shape[0] )
-    left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
-    right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
+    # Fit a second order polynomial to each
+    if (leftx.shape != (0, ) and lefty.shape != (0, )):
+        left_fit = np.polyfit(lefty, leftx, 2)
+
+    if (rightx.shape != (0, ) and righty.shape != (0, )):
+        right_fit = np.polyfit(righty, rightx, 2)
 
     cv2.imshow('sliding_window', out_img)
     
