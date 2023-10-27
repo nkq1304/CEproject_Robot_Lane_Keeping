@@ -78,7 +78,7 @@ def combined_thresh(img):
     abs_bin = abs_sobel_thresh(img, orient='x', thresh_min=50, thresh_max=255)
     mag_bin = mag_thresh(img, sobel_kernel=3, mag_thresh=(50, 255))
     dir_bin = dir_threshold(img, sobel_kernel=15, thresh=(0.7, 1.3))
-    nor_bin = nor_thresh(img, thresh=(170, 255))
+    nor_bin = nor_thresh(img, thresh=(130, 255))
 
     combined = np.zeros_like(dir_bin)
     combined[(abs_bin == 1 | ((mag_bin == 1) & (dir_bin == 1))) | nor_bin == 1] = 1
