@@ -1,11 +1,15 @@
 import torch
 import numpy as np
+import shutil
 from tqdm.autonotebook import tqdm
+import os
+import os
 import torch
 from model import TwinLite as net
 import cv2
 
 def Run(model,img):
+    img = cv2.resize(img, (640, 360))
     img_rs=img.copy()
 
     img = img[:, :, ::-1].transpose(2, 0, 1)
@@ -25,8 +29,7 @@ def Run(model,img):
     DA = da_predict.byte().cpu().data.numpy()[0]*255
     LL = ll_predict.byte().cpu().data.numpy()[0]*255
     # img_rs[DA>100]=[255,0,0]
-    img_rs[LL>100]=[255,255,255]
-    img_rs[LL<=100]=[0,0,0]
+    img_rs[LL>100]=[0,0,255]
     
     return img_rs
 
@@ -37,9 +40,9 @@ model.load_state_dict(torch.load('pretrained/best.pth'))
 model.eval()
 
 # Set start and end time in seconds
-start = 1525
-end = start + 150
-video_name = 'japan_driving'
+start = 0
+end = start + 500
+video_name = 'project_video'
 
 video = cv2.VideoCapture('videos/' + video_name + '.mp4')
 video.set(cv2.CAP_PROP_POS_MSEC, start * 1000)
@@ -54,18 +57,14 @@ if (end is None or end > video.get(cv2.CAP_PROP_FRAME_COUNT) / fps):
 endFrame = end * fps
 
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-original_out = cv2.VideoWriter('results/' + video_name + '_original.mp4', fourcc, fps, (640, 360))
-result_out = cv2.VideoWriter('results/' + video_name + '.mp4', fourcc, fps, (640, 360))
+out = cv2.VideoWriter('results/' + video_name + '.mp4', fourcc, fps, (640, 360))
 
 while video.isOpened():
     ret, img = video.read()
     if ret and video.get(cv2.CAP_PROP_POS_FRAMES) < endFrame:
-        img = cv2.resize(img, (640, 360))
-        cv2.imshow('org', img)
-        original_out.write(img)
         img = Run(model, img)
         cv2.imshow('img', img)
-        result_out.write(img)
+        out.write(img)
     else:
         break
 
