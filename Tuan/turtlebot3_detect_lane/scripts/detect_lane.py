@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import rospy
 import numpy as np
-import cv2
 import sys
 
 from sensor_msgs.msg import Image
@@ -9,9 +8,7 @@ from cv_bridge import CvBridge
 
 import torch
 import numpy as np
-import shutil
 from tqdm.autonotebook import tqdm
-import os
 import os
 import torch
 from model import TwinLite as net
@@ -44,12 +41,13 @@ def Run(model, img):
     return img_rs
 
 
-class get_image:
+class detect_lane:
     def __init__(self):
         self.bridge = CvBridge()
         self.image_sub = rospy.Subscriber("/camera/image", Image, self.callback)
         self.counter = 0
         self.model = net.TwinLiteNet()
+        # TODO: If the model was trained with only one GPU, then comment the following line
         self.model = torch.nn.DataParallel(self.model)
         self.model = self.model.cuda()
         self.model.load_state_dict(torch.load("pretrained/best.pth"))
@@ -70,7 +68,7 @@ class get_image:
 
 
 def main(args):
-    get_image()
+    detect_lane()
     rospy.init_node("get_image", anonymous=True)
     try:
         rospy.spin()
