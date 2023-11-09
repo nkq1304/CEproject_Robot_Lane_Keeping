@@ -1,0 +1,27 @@
+<?xml version='1.0'?>
+<sdf version='1.4'>
+  <model name="tile plain">
+    <static>true</static>
+    <pose>0 0 0 0 0 0</pose>
+
+    <link name="tile plain">
+      <visual name="panel">
+        <geometry>
+          <mesh>
+            <uri>model://tile_plain/tile_plain.dae</uri>
+            <scale>0.05 0.05 0.05</scale>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="panel_collision">
+        <geometry>
+          <mesh>
+            <uri>model://tile_plain/tile_plain.dae</uri>
+            <scale>1 1 1</scale>
+          </mesh>
+        </geometry>
+      </collision>
+    </link>
+
+  </model>
+</sdf>
