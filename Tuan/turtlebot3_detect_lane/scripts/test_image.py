@@ -29,20 +29,24 @@ def Run(model, img):
 
     DA = da_predict.byte().cpu().data.numpy()[0] * 255
     LL = ll_predict.byte().cpu().data.numpy()[0] * 255
-    # img_rs[DA>100]=[255,0,0]
+    img_rs[DA > 100] = [255, 0, 0]
     img_rs[LL > 100] = [0, 255, 0]
 
     return img_rs
 
 
 model = net.TwinLiteNet()
+# TODO: If the model was trained with only one GPU, then comment the following line
 model = torch.nn.DataParallel(model)
 model = model.cuda()
 model.load_state_dict(torch.load("pretrained/best.pth"))
 model.eval()
 
 image_list = os.listdir("images")
+shutil.rmtree("results")
+os.mkdir("results")
 for i, imgName in enumerate(image_list):
     img = cv2.imread(os.path.join("images", imgName))
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     img = Run(model, img)
     cv2.imwrite(os.path.join("results", imgName), img)

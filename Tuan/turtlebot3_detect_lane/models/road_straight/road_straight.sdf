@@ -1,0 +1,27 @@
+<?xml version='1.0'?>
+<sdf version='1.4'>
+  <model name="road straight">
+    <static>true</static>
+    <pose>0 0 0 0 0 0</pose>
+
+    <link name="road straight">
+      <visual name="panel">
+        <geometry>
+          <mesh>
+            <uri>model://road_straight/road_straight.dae</uri>
+            <scale>0.05 0.05 0.05</scale>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="panel_collision">
+        <geometry>
+          <mesh>
+            <uri>model://road_straight/road_straight.dae</uri>
+            <scale>1 1 1</scale>
+          </mesh>
+        </geometry>
+      </collision>
+    </link>
+
+  </model>
+</sdf>

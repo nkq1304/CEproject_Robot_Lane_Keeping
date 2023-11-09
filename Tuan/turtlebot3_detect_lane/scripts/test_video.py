@@ -30,19 +30,48 @@ def Run(model, img):
     DA = da_predict.byte().cpu().data.numpy()[0] * 255
     LL = ll_predict.byte().cpu().data.numpy()[0] * 255
     # img_rs[DA>100]=[255,0,0]
-    img_rs[LL > 100] = [0, 255, 0]
+    img_rs[LL > 100] = [0, 0, 255]
 
     return img_rs
 
 
 model = net.TwinLiteNet()
+# TODO: If the model was trained with only one GPU, then comment the following line
 model = torch.nn.DataParallel(model)
 model = model.cuda()
 model.load_state_dict(torch.load("pretrained/best.pth"))
 model.eval()
 
-image_list = os.listdir("images")
-for i, imgName in enumerate(image_list):
-    img = cv2.imread(os.path.join("images", imgName))
-    img = Run(model, img)
-    cv2.imwrite(os.path.join("results", imgName), img)
+# Set start and end time in seconds
+start = 0
+end = start + 500
+video_name = "project_video"
+
+video = cv2.VideoCapture("videos/" + video_name + ".mp4")
+video.set(cv2.CAP_PROP_POS_MSEC, start * 1000)
+fps = video.get(cv2.CAP_PROP_FPS)
+
+if start is None or start < 0:
+    start = 0
+
+if end is None or end > video.get(cv2.CAP_PROP_FRAME_COUNT) / fps:
+    end = video.get(cv2.CAP_PROP_FRAME_COUNT) / fps
+
+endFrame = end * fps
+
+fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+out = cv2.VideoWriter("results/" + video_name + ".mp4", fourcc, fps, (640, 360))
+
+while video.isOpened():
+    ret, img = video.read()
+    if ret and video.get(cv2.CAP_PROP_POS_FRAMES) < endFrame:
+        img = Run(model, img)
+        cv2.imshow("img", img)
+        out.write(img)
+    else:
+        break
+
+    if cv2.waitKey(1) & 0xFF == ord("q"):
+        break
+
+video.release()
