@@ -1,20 +1,12 @@
-#!/usr/bin/env python3
 import rospy
 import numpy as np
 import cv2
-import sys
-import torch
-import numpy as np
 import torch
 from model import TwinLite as net
-import cv2
 
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import Twist
 from cv_bridge import CvBridge
-
-BURGER_MAX_LIN_VEL = 0.22
-BURGER_MAX_ANG_VEL = 2.84
 
 def Run(model, img):
     img = cv2.resize(img, (640, 360))
@@ -44,7 +36,7 @@ def Run(model, img):
 
 def detectLane(line, type_of_line):
     # Function: Detect left and right lane
-    thresh_theta = 10 #Theta in degree
+    thresh_theta = 45 #Theta in degree
     # Get theta of each line in "line"
     theta = []
     for index in range(frame_num) :
@@ -159,6 +151,28 @@ def detectLane(line, type_of_line):
         
     return line
 
+def drawInFrame(left_line, right_line, frame):
+    height, _ = frame.shape[:2]
+
+    try:
+        if left_line is not None and right_line is not None:
+            x1, y1, x2, y2 = left_line[0]
+            x3, y3, x4, y4 = right_line[0]
+            # Find linear equation of left line
+            m1 = (y2 - y1) / (x2 - x1)
+            b1 = y1 - m1 * x1
+            # Find linear equation of right line 
+            m2 = (y4 - y3) / (x4 - x3)
+            b2 = y3 - m2 * x3
+            # Draw line
+            line_left_color = (0, 0, 255) # RED
+            cv2.line(frame, (int((height - b1) / m1), height), (x2, y2), line_left_color, line_thickness) 
+            line_right_color = (0, 255, 0) # GREEN
+            cv2.line(frame, (x3, y3), (int((height - b2) / m2), height), line_right_color, line_thickness)
+    except:
+        return frame
+    return frame
+
 def identifyInvasion(left_line, right_line, frame, minDistance):
     _, width = frame.shape[:2]
     if left_line is not None and right_line is not None:
@@ -190,8 +204,6 @@ def backend(binary_image):
     global frame_num
     global line_thickness
 
-    frame_count += 1
-
     frame_array.append(binary_image)
     gray_frame = cv2.cvtColor(binary_image, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray_frame, (5, 5), 0)
@@ -219,43 +231,53 @@ def backend(binary_image):
                 if theta > max_right_theta:
                     max_right_theta = theta
                     right_line = line
+
         right_lines.append(right_line)
         left_lines.append(left_line)
-    
-    # Start processing when there are enough frames:
-    if frame_count == frame_num:
-        # 1. Identify left and right lanes: Because it is based on the max theta angle, 
-        # error (noisy) lines may exist, so we need to remove/replace them with correct lines.
+
         right_lines = detectLane(right_lines, type_of_line = 'Right')
         left_lines = detectLane(left_lines, type_of_line = 'Left')
+
         for l_line, r_line, _frame in zip(left_lines, right_lines, frame_array):
-            result = identifyInvasion(l_line, r_line, _frame, minDistance = 5)
+            result_image = drawInFrame(l_line, r_line, _frame)
+            result_distance = identifyInvasion(l_line, r_line, _frame, minDistance = 5)
 
-        right_lines = []
-        left_lines = []
-        frame_array = []
-        frame_count = 0
+        if len(right_lines) > frame_num:
+            right_lines.pop(0)
 
-        return result
+        if len(left_lines) > frame_num:
+            left_lines.pop(0)
+
+        if len(frame_array) > frame_num:
+            frame_array.pop(0)
+
+        return result_image, result_distance
 
 def image_callback(data):
-        cv_image = bridge.imgmsg_to_cv2(data, "bgr8")
-        cv_image = cv2.resize(cv_image, (1280, 720))
-        binary_image = Run(model, cv_image)
+    global last_angular_vel
+    
+    cv_image = bridge.imgmsg_to_cv2(data, "bgr8")
+    cv_image = cv2.resize(cv_image, (1280, 720))
+    binary_image = Run(model, cv_image)
 
-        angular = backend(binary_image)
+    visualized_image, distance = backend(binary_image)
 
-        twist = Twist()
-        
-        if angular is not None:
-            twist.angular.z = -angular * 0.01
-            print(twist.angular.z)
+    twist = Twist()
+    
+    if distance is not None:
+        last_angular_vel = -distance * 0.01
 
-        twist.linear.x = 0.1
-        pub.publish(twist)
+    twist.angular.z = last_angular_vel
+    twist.linear.x = 0.1
 
-        cv2.imshow("Image window", cv_image)
-        cv2.waitKey(1)
+    print("Angular velocity: ", twist.angular.z)
+
+    pub.publish(twist)
+
+    cv2.imshow("Visualized Image", visualized_image)
+    # cv2.imshow("Image", cv_image)
+
+    cv2.waitKey(1)
 
 model = net.TwinLiteNet()
 # TODO: If the model was trained with only one GPU, then comment the following line
@@ -268,22 +290,21 @@ last_left_theta = None # Theta of last left line of previous 5 frames
 last_left_line = None # Last left line of previous 5 frames
 last_right_theta = None # Theta of last right line of previous 5 frames
 last_right_line = None # Last right line of previous 5 frames
-frame_num = 5 # Max frame's queue number
 line_thickness = 4
 # Array of frames, right lines and left lines  
 frame_array = [] # This frame will use to write to output video
-frame_count = 0
 right_lines = []
 left_lines = []
 
+frame_num = 5 # Number of frames to determine the lane
+
+last_angular_vel = 0
+
 bridge = CvBridge()
-rospy.Subscriber("/camera/image", Image, image_callback)
 
 rospy.init_node("get_image", anonymous=True)
-
+rospy.Subscriber("/camera/image", Image, image_callback)
 pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)
-
-turtlebot3_model = rospy.get_param("model", "burger")
 
 try:
     rospy.spin()
