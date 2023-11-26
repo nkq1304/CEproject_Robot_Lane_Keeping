@@ -3,10 +3,13 @@ import numpy as np
 import os
 
 # Setup directory to save frame
-save_in_dir = "D:/HK231/DAMHKTMT/detectLaneReal/current/input_frame" 
+save_in_dir = "D:/HK231/DAMHKTMT/detectLaneGazebo/current/input_frame" 
 if not os.path.exists(save_in_dir):
     os.makedirs(save_in_dir)
-save_out_dir = "D:/HK231/DAMHKTMT/detectLaneReal/current/output_frame" 
+# save_in_dir2 = "D:/HK231/DAMHKTMT/detectLaneGazebo/detect_input_frame" 
+# if not os.path.exists(save_in_dir2):
+#     os.makedirs(save_in_dir2)
+save_out_dir = "D:/HK231/DAMHKTMT/detectLaneGazebo/current/output_frame" 
 if not os.path.exists(save_out_dir):
     os.makedirs(save_out_dir)
 
@@ -16,8 +19,8 @@ last_left_line = None # Last left line of previous 5 frames
 last_right_theta = None # Theta of last right line of previous 5 frames
 last_right_line = None # Last right line of previous 5 frames
 frame_num = 5 # Max frame's array number
-line_thickness = 4 # Thickness of 
-thresh_theta = 7.5 # Threshold theta in degree
+line_thickness = 6 # Thickness of 
+thresh_theta = 10 # Threshold theta in degree
 scale_thresh = 2
 frame_height = None
 frame_width = None
@@ -25,7 +28,6 @@ font = cv2.FONT_HERSHEY_COMPLEX
 fontScale = 0.65
 color = (255, 0, 0) 
 thickness = 1
-
 def findInterWithXAxis(line):
     if line is not None:
         x1, y1, x2, y2 = line[0]
@@ -74,7 +76,6 @@ def replaceLane(line, theta, approx_theta_arr, last_line, last_theta, ef_num):
                     line[i] = line[i-1]
         last_line = line[len(line) - 1]
         last_theta = calTheta(line[len(line) - 1])
-
     else:
         if (ef_num > int(frame_num / 2)) or (ef_num <= int(frame_num / 2) and ef_num > 0):
             # If number of error frame larger than half of number of max frame:
@@ -100,6 +101,7 @@ def replaceLane(line, theta, approx_theta_arr, last_line, last_theta, ef_num):
                             else:
                                 kind_of_error.append(0)
                         else:
+                            print('Out, last line: ', last_line[0])
                             line[i] = last_line
                             kind_of_error.append(1)
                     else:
@@ -153,19 +155,15 @@ def detectLane(line, type_of_line, error_frame):
     kind_of_error = []
     # print(approx_theta_arr)
     if(type_of_line == 'Left'):
-        # if flag == True:
-        #     print('Replace left')
-        #     for i in range(len(line)):
-        #         if line[i] is not None:
-        #             print("Line before replace", i, line[i])
+            # for i in range(len(line)):
+            #     if line[i] is not None:
+            #         print("Line before replace", i, line[i])
         line, last_left_line, last_left_theta, kind_of_error = replaceLane(line, theta, approx_theta_arr, last_left_line, last_left_theta, error_frame)
         # if flag == True:
         #     for i in range(len(line)):
         #         if line[i] is not None:
         #             print('Line after replace', i, line[i])
     elif (type_of_line == 'Right'):
-        # if flag == True:
-        #     print('Replace right')
         #     for i in range(len(line)):
         #         if line[i] is not None:
         #             print("Line before replace", i, line[i])
@@ -208,7 +206,9 @@ def drawInFrame(left_line, right_line, frame):
             cv2.line(frame, (x3, y3), (int((height - b2) / m2), height), line_right_color, line_thickness)
         else:            
             cv2.line(frame, (x3, y3), (x4, y4), line_right_color, line_thickness)
+
 def drawErrorInFrame(frame, left, right):
+    org = (25, 50)
     org = (25, 50)
     if left == 0 and right != 0:
         if right == 1:
@@ -285,13 +285,11 @@ def detectDrawedErrLine(frame, right_line, left_line, minDistance):
             distance1 = np.sqrt((x4 - x1) *(x4 - x1) + (y4 - y1)*(y4 - y1))
             distance2 = np.sqrt((x3 - x2) *(x3 - x2) + (y3 - y2)*(y3 - y2))
             if (distance1 <= minDistance) and (distance2 <= minDistance):
-                cv2.putText(frame, 'Error frame, detect again!', (25, 100), font,  fontScale, color, thickness, cv2.LINE_AA)
+                cv2.putText(frame, 'Error frame, detect again!', (25,100), font,  fontScale, color, thickness, cv2.LINE_AA)
             else:
                 cv2.putText(frame, 'See two lines', (25, 75), font,  fontScale, color, thickness, cv2.LINE_AA)
-
         else:
-            cv2.putText(frame, 'Error frame, detect again', (25, 100), font,  fontScale, color, thickness, cv2.LINE_AA)
-
+            cv2.putText(frame, 'Error frame, detect again', (25,100), font,  fontScale, color, thickness, cv2.LINE_AA)
 def identifyInvasion(left_line, right_line, frame, minDistance):
     _, width = frame.shape[:2]
     if left_line is not None and right_line is not None:
@@ -368,14 +366,15 @@ def backend(video_binary, video_original):
         image_path = os.path.join(save_in_dir, image_name)
         cv2.imwrite(image_path, frame_model)
         in_img_count += 1
-
+        
+        
         # Reduce noise
         gray_frame = cv2.cvtColor(frame_model, cv2.COLOR_BGR2GRAY)
         blurred = cv2.GaussianBlur(gray_frame, (5, 5), 0)
         ret, thresh = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU) 
         kernel = np.ones((3, 3), np.uint8) 
         closing = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel, iterations = 2) 
-        lines = cv2.HoughLinesP(closing, 1, np.pi / 180, threshold=75, minLineLength=35, maxLineGap=5)
+        lines = cv2.HoughLinesP(closing, 1, np.pi / 180, threshold=50, minLineLength=35, maxLineGap=5)
 
         # Detect lane 
         if lines is not None:
@@ -398,6 +397,19 @@ def backend(video_binary, video_original):
                         right_line = line
             right_lines.append(right_line)
             left_lines.append(left_line)
+            # if left_line is not None: 
+            #     x1, y1, x2, y2 = left_line[0]
+            #     line_left_color = (0, 255, 255) # RED
+            #     cv2.line(frame_model, (x1, y1), (x2, y2), line_left_color, line_thickness) 
+            # if right_line is not None:    
+            #     x1, y1, x2, y2 = right_line[0]
+            #     line_right_color = (255, 255, 0) # GREEN
+            #     cv2.line(frame_model, (x1, y1), (x2, y2), line_right_color, line_thickness)
+            # img = cv2.add(frame_ori, frame_model)
+            # cv2.imshow('Add frame', img)
+            # image_name = f"image_{in_img_count-1}.jpg"
+            # image_path = os.path.join(save_in_dir2, image_name)
+            # cv2.imwrite(image_path, img)
         if is_first_5_frame != False :
             # If number of error frame larger than half the number of max frame
             # or the current frame does not have any errors in lines, 
@@ -444,7 +456,6 @@ def backend(video_binary, video_original):
                 #         print('Last right line in')
             else:
                 end = frame_count
-
             for l_line, r_line, _frame, i in zip(left_lines, right_lines, frame_array, range(0, end)):
                 # 2. Write this frame into output video
                 # If this frame belong to first 5 frames, write it to output video
@@ -460,7 +471,6 @@ def backend(video_binary, video_original):
                     else:
                         org = (25, 50)
                         cv2.putText(_frame, 'See two lines', org, font,  fontScale, color, thickness, cv2.LINE_AA)
-                    
                     # if is_first_5_frame != False and error_frame > 0:
                     #     x1, y1, x2, y2 = last_left_line[0]
                     #     x3, y3, x4, y4 = last_right_line[0]            
@@ -474,12 +484,14 @@ def backend(video_binary, video_original):
                     cv2.imwrite(image_path, _frame)
                     out_img_count += 1
                     cv2.imshow('Processed Frame', _frame)
-
+                    # img = cv2.add(_frame, frame_model)
+                    # cv2.imshow('Add frame', img)
                 if (is_first_5_frame == False) and (i == (frame_num - 1)):    
                     is_first_5_frame = True
 
             # 3. Remove some element in frame array, right lines array, left line array
             if error_frame > 0:
+                error_count = 0
                 # print("Frames: %s, %s", in_img_count - error_frame, in_img_count - 1)
                 right_lines = right_lines[error_frame:]
                 left_lines = left_lines[error_frame:]
@@ -491,7 +503,7 @@ def backend(video_binary, video_original):
                 left_lines = left_lines[1:]
                 frame_array = frame_array[1:]
                 frame_count = frame_count - 1
-
+        
         if cv2.waitKey(1) == ord('q'):
             break   
     output_model.release()
@@ -500,7 +512,7 @@ def backend(video_binary, video_original):
     cv2.destroyAllWindows()
 
 def main():
-    backend("japan_driving.mp4", "japan_driving_original.mp4")
+    backend("simulation_detect.mp4", "simulation_original.mp4")
 
 if __name__ == '__main__':
     main()
