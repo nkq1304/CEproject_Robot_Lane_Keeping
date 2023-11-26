@@ -154,6 +154,7 @@ cython_debug/
 
 # Png
 *.png
+*.jpg
 *.mp4
 *.avi
 
