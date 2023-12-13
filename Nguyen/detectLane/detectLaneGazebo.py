@@ -174,38 +174,49 @@ def detectLane(line, type_of_line, error_frame):
         #             print("Line after replace", i, line[i])
     return line, kind_of_error
 
-def drawInFrame(left_line, right_line, frame):
+def drawInFrame(left_line, right_line, frame_ori, frame_model):
     # if(error_frame > 0):
     #     print("Draw line left - right", left_line[0], right_line[0])
-    height, _ = frame.shape[:2]
+    height, _ = frame_ori.shape[:2]
     if left_line is not None and right_line is not None:
         x1, y1, x2, y2 = left_line[0]
         x3, y3, x4, y4 = right_line[0]
-        m1 = b1 = m2 = b2 = None
-        # Find linear equation of left line
-        if x1 != x2:
-            m1 = (y2 - y1) / (x2 - x1)
-            b1 = y1 - m1 * x1
-        else:
-            x1, y1, x2, y2 = last_left_line[0]
-        # Find linear equation of right line 
-        if x3 != x4:
-            m2 = (y4 - y3) / (x4 - x3)
-            b2 = y3 - m2 * x3
-        else:
-            x3, y3, x4, y4 = last_right_line[0]
-        # Draw line
+        contours, _ = cv2.findContours(frame_model, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         line_left_color = (0, 0, 255) # RED
         line_right_color = (0, 255, 0) # GREEN
-        if m1 is not None:
-            cv2.line(frame, (int((height - b1) / m1), height), (x2, y2), line_left_color, line_thickness) 
-        else:
-            x1, y1, x2, y2 = last_left_line[0]
-            cv2.line(frame, (x1, y1), (x2, y2), line_left_color, line_thickness) 
-        if m2 is not None:
-            cv2.line(frame, (x3, y3), (int((height - b2) / m2), height), line_right_color, line_thickness)
-        else:            
-            cv2.line(frame, (x3, y3), (x4, y4), line_right_color, line_thickness)
+        for i, contour in enumerate(contours):
+            pt1_in_line = cv2.pointPolygonTest(contour, (float(x1), float(y1)), True)
+            pt2_in_line = cv2.pointPolygonTest(contour, (float(x2), float(y2)), True)
+            pt3_in_line = cv2.pointPolygonTest(contour, (float(x3), float(y3)), True)
+            pt4_in_line = cv2.pointPolygonTest(contour, (float(x4), float(y4)), True)
+            
+            if pt1_in_line >= 0 and pt2_in_line >= 0:
+                cv2.drawContours(frame_ori, contours, i, line_left_color, thickness=cv2.FILLED)
+            if pt3_in_line >= 0 and pt4_in_line >= 0:
+                cv2.drawContours(frame_ori, contours, i, line_right_color, thickness=cv2.FILLED)
+        # m1 = b1 = m2 = b2 = None
+        # # Find linear equation of left line
+        # if x1 != x2:
+        #     m1 = (y2 - y1) / (x2 - x1)
+        #     b1 = y1 - m1 * x1
+        # else:
+        #     x1, y1, x2, y2 = last_left_line[0]
+        # # Find linear equation of right line 
+        # if x3 != x4:
+        #     m2 = (y4 - y3) / (x4 - x3)
+        #     b2 = y3 - m2 * x3
+        # else:
+        #     x3, y3, x4, y4 = last_right_line[0]
+        # # Draw line
+        # if m1 is not None:
+        #     cv2.line(frame, (int((height - b1) / m1), height), (x2, y2), line_left_color, line_thickness) 
+        # else:
+        #     x1, y1, x2, y2 = last_left_line[0]
+        #     cv2.line(frame, (x1, y1), (x2, y2), line_left_color, line_thickness) 
+        # if m2 is not None:
+        #     cv2.line(frame, (x3, y3), (int((height - b2) / m2), height), line_right_color, line_thickness)
+        # else:            
+        #     cv2.line(frame, (x3, y3), (x4, y4), line_right_color, line_thickness)
 
 def drawErrorInFrame(frame, left, right):
     org = (25, 50)
@@ -258,6 +269,7 @@ def drawErrorInFrame(frame, left, right):
 
 def detectDrawedErrLine(frame, right_line, left_line, minDistance):
     org = (25, 100)
+    isHaveErrFrame = False
     if left_line is not None and right_line is not None:
         x1, y1, x2, y2 = left_line[0]
         x3, y3, x4, y4 = right_line[0]
@@ -286,10 +298,13 @@ def detectDrawedErrLine(frame, right_line, left_line, minDistance):
             distance2 = np.sqrt((x3 - x2) *(x3 - x2) + (y3 - y2)*(y3 - y2))
             if (distance1 <= minDistance) and (distance2 <= minDistance):
                 cv2.putText(frame, 'Error frame, detect again!', (25,100), font,  fontScale, color, thickness, cv2.LINE_AA)
+                isHaveErrFrame = True
             else:
                 cv2.putText(frame, 'See two lines', (25, 75), font,  fontScale, color, thickness, cv2.LINE_AA)
         else:
             cv2.putText(frame, 'Error frame, detect again', (25,100), font,  fontScale, color, thickness, cv2.LINE_AA)
+            isHaveErrFrame = True
+    return isHaveErrFrame
 def identifyInvasion(left_line, right_line, frame, minDistance):
     _, width = frame.shape[:2]
     if left_line is not None and right_line is not None:
@@ -314,7 +329,8 @@ def identifyInvasion(left_line, right_line, frame, minDistance):
             b2 = y3 - m2 * x3
         # Find the intersection of the left and right lanes
         inter_x = (b2 - b1) / (m1 - m2)
-        distance = inter_x - width/2 # Variable uses to identify which lane the robot is invade on        
+        avg_x = ((width - b1)/m1 + (width - b2)/m2)/2
+        distance = inter_x - avg_x # Variable uses to identify which lane the robot is invade on        
         org = (25,25) 
         if abs(distance) < minDistance:
             cv2.putText(frame, 'No Deviation', org, font,  fontScale, color, thickness, cv2.LINE_AA)
@@ -348,6 +364,7 @@ def backend(video_binary, video_original):
 
     # Array of frames, right lines and left lines  
     frame_array = [] # This frame will use to write to output video
+    frame_model_arr = []
     frame_count = 0
     right_lines = []
     left_lines = []
@@ -374,6 +391,7 @@ def backend(video_binary, video_original):
         ret, thresh = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU) 
         kernel = np.ones((3, 3), np.uint8) 
         closing = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel, iterations = 2) 
+        frame_model_arr.append(closing)
         lines = cv2.HoughLinesP(closing, 1, np.pi / 180, threshold=50, minLineLength=35, maxLineGap=5)
 
         # Detect lane 
@@ -456,34 +474,38 @@ def backend(video_binary, video_original):
                 #         print('Last right line in')
             else:
                 end = frame_count
-            for l_line, r_line, _frame, i in zip(left_lines, right_lines, frame_array, range(0, end)):
+            for l_line, r_line, f_ori, f_mdl, i in zip(left_lines, right_lines, frame_array, frame_model_arr, range(0, end)):
                 # 2. Write this frame into output video
                 # If this frame belong to first 5 frames, write it to output video
                 # Else, only draw on frames that have not been processed yet.
 
                 if (is_first_5_frame == False) or (i >= (frame_num - 1)):
                     # 1. Draw detected lines on each original frame in frame_array
-                    drawInFrame(l_line, r_line, _frame)
                     if error_frame > 0:
-                        drawErrorInFrame(_frame, left_error[error_count], right_error[error_count])
-                        detectDrawedErrLine(_frame, r_line, l_line, minDistance=10)
+                        drawErrorInFrame(f_ori, left_error[error_count], right_error[error_count])
+                        isHaveErrFrame = detectDrawedErrLine(f_ori, r_line, l_line, minDistance=10)
+                        if isHaveErrFrame == False:
+                            drawInFrame(l_line, r_line, f_ori, f_mdl)
+                            identifyInvasion(l_line, r_line, f_ori, minDistance=5)                              
                         error_count = error_count + 1
                     else:
+                        drawInFrame(l_line, r_line, f_ori, f_mdl)
+                        identifyInvasion(l_line, r_line, f_ori, minDistance=5)
                         org = (25, 50)
-                        cv2.putText(_frame, 'See two lines', org, font,  fontScale, color, thickness, cv2.LINE_AA)
+                        cv2.putText(f_ori, 'See two lines', org, font,  fontScale, color, thickness, cv2.LINE_AA)
                     # if is_first_5_frame != False and error_frame > 0:
                     #     x1, y1, x2, y2 = last_left_line[0]
                     #     x3, y3, x4, y4 = last_right_line[0]            
                     #     print('Left point: %s, %s', x2, y2)
                     #     print('Right point: %s, %s', x3, y3)
                     # 2. Determine which lane the turtlebot is encroaching on
-                    identifyInvasion(l_line, r_line, _frame, minDistance=5)
-                    out.write(_frame)
+                    
+                    out.write(f_ori)
                     image_name = f"image_{out_img_count}.jpg"
                     image_path = os.path.join(save_out_dir, image_name)
-                    cv2.imwrite(image_path, _frame)
+                    cv2.imwrite(image_path, f_ori)
                     out_img_count += 1
-                    cv2.imshow('Processed Frame', _frame)
+                    cv2.imshow('Processed Frame', f_ori)
                     # img = cv2.add(_frame, frame_model)
                     # cv2.imshow('Add frame', img)
                 if (is_first_5_frame == False) and (i == (frame_num - 1)):    
@@ -496,12 +518,14 @@ def backend(video_binary, video_original):
                 right_lines = right_lines[error_frame:]
                 left_lines = left_lines[error_frame:]
                 frame_array = frame_array[error_frame:]
+                frame_model_arr = frame_model_arr[error_frame:]
                 frame_count = frame_count - (error_frame + 1)
                 error_frame = 0  
             else:
                 right_lines = right_lines[1:]
                 left_lines = left_lines[1:]
                 frame_array = frame_array[1:]
+                frame_model_arr = frame_model_arr[1:]
                 frame_count = frame_count - 1
         
         if cv2.waitKey(1) == ord('q'):

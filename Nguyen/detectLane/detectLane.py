@@ -176,38 +176,27 @@ def detectLane(line, type_of_line, error_frame):
         #             print("Line after replace", i, line[i])
     return line, kind_of_error
 
-def drawInFrame(left_line, right_line, frame):
+def drawInFrame(left_line, right_line, frame_ori, frame_model):
     # if(error_frame > 0):
     #     print("Draw line left - right", left_line[0], right_line[0])
-    height, _ = frame.shape[:2]
+    height, _ = frame_ori.shape[:2]
     if left_line is not None and right_line is not None:
         x1, y1, x2, y2 = left_line[0]
         x3, y3, x4, y4 = right_line[0]
-        m1 = b1 = m2 = b2 = None
-        # Find linear equation of left line
-        if x1 != x2:
-            m1 = (y2 - y1) / (x2 - x1)
-            b1 = y1 - m1 * x1
-        else:
-            x1, y1, x2, y2 = last_left_line[0]
-        # Find linear equation of right line 
-        if x3 != x4:
-            m2 = (y4 - y3) / (x4 - x3)
-            b2 = y3 - m2 * x3
-        else:
-            x3, y3, x4, y4 = last_right_line[0]
-        # Draw line
+        contours, _ = cv2.findContours(frame_model, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         line_left_color = (0, 0, 255) # RED
         line_right_color = (0, 255, 0) # GREEN
-        if m1 is not None:
-            cv2.line(frame, (int((height - b1) / m1), height), (x2, y2), line_left_color, line_thickness) 
-        else:
-            x1, y1, x2, y2 = last_left_line[0]
-            cv2.line(frame, (x1, y1), (x2, y2), line_left_color, line_thickness) 
-        if m2 is not None:
-            cv2.line(frame, (x3, y3), (int((height - b2) / m2), height), line_right_color, line_thickness)
-        else:            
-            cv2.line(frame, (x3, y3), (x4, y4), line_right_color, line_thickness)
+        for i, contour in enumerate(contours):
+            pt1_in_line = cv2.pointPolygonTest(contour, (float(x1), float(y1)), True)
+            pt2_in_line = cv2.pointPolygonTest(contour, (float(x2), float(y2)), True)
+            pt3_in_line = cv2.pointPolygonTest(contour, (float(x3), float(y3)), True)
+            pt4_in_line = cv2.pointPolygonTest(contour, (float(x4), float(y4)), True)
+            
+            if pt1_in_line >= 0 and pt2_in_line >= 0:
+                cv2.drawContours(frame_ori, contours, i, line_left_color, thickness=cv2.FILLED)
+            if pt3_in_line >= 0 and pt4_in_line >= 0:
+                cv2.drawContours(frame_ori, contours, i, line_right_color, thickness=cv2.FILLED)
+
 def drawErrorInFrame(frame, left, right):
     org = (25, 50)
     if left == 0 and right != 0:
@@ -258,6 +247,7 @@ def drawErrorInFrame(frame, left, right):
 
 def detectDrawedErrLine(frame, right_line, left_line, minDistance):
     org = (25, 100)
+    isHaveErrFrame = False
     if left_line is not None and right_line is not None:
         x1, y1, x2, y2 = left_line[0]
         x3, y3, x4, y4 = right_line[0]
@@ -286,11 +276,14 @@ def detectDrawedErrLine(frame, right_line, left_line, minDistance):
             distance2 = np.sqrt((x3 - x2) *(x3 - x2) + (y3 - y2)*(y3 - y2))
             if (distance1 <= minDistance) and (distance2 <= minDistance):
                 cv2.putText(frame, 'Error frame, detect again!', (25, 100), font,  fontScale, color, thickness, cv2.LINE_AA)
+                isHaveErrFrame = True
             else:
                 cv2.putText(frame, 'See two lines', (25, 75), font,  fontScale, color, thickness, cv2.LINE_AA)
 
         else:
             cv2.putText(frame, 'Error frame, detect again', (25, 100), font,  fontScale, color, thickness, cv2.LINE_AA)
+            isHaveErrFrame = True
+    return isHaveErrFrame
 
 def identifyInvasion(left_line, right_line, frame, minDistance):
     _, width = frame.shape[:2]
