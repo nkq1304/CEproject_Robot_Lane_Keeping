@@ -27,15 +27,13 @@ class ControlLane():
         self.lastError = error
         
         twist = Twist()
-        twist.linear.x = 0.1        
+        # twist.linear.x = 0.1
         twist.linear.x = min(self.MAX_VEL * ((1 - abs(error) / 500) ** 2.2), 0.05)
         twist.linear.y = 0
         twist.linear.z = 0
         twist.angular.x = 0
         twist.angular.y = 0
         twist.angular.z = -max(angular_z, -2.0) if angular_z < 0 else -min(angular_z, 2.0)
-        
-        print("angular_z: ", twist.angular.z)
 
         self.pub_cmd_vel.publish(twist)
 
@@ -49,6 +47,7 @@ class ControlLane():
         twist.angular.x = 0
         twist.angular.y = 0
         twist.angular.z = 0
+
         self.pub_cmd_vel.publish(twist) 
 
     def main(self):
