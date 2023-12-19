@@ -93,10 +93,10 @@
       <heading_deg>0</heading_deg>
     </spherical_coordinates>
     <state world_name='default'>
-      <sim_time>423 764000000</sim_time>
-      <real_time>147 676280188</real_time>
-      <wall_time>1699023415 855450931</wall_time>
-      <iterations>147317</iterations>
+      <sim_time>713 759000000</sim_time>
+      <real_time>232 470164237</real_time>
+      <wall_time>1700999715 195554607</wall_time>
+      <iterations>190160</iterations>
       <model name='ground_plane'>
         <pose>0 0 -0.1 0 -0 0</pose>
         <scale>1 1 1</scale>
@@ -108,10 +108,10 @@
         </link>
       </model>
       <model name='road curve'>
-        <pose>0 4.50036 0 0 0 -1.5708</pose>
+        <pose>0.276407 3.76064 -0.011495 0 0 -2.26822</pose>
         <scale>1 1 1</scale>
         <link name='road curve'>
-          <pose>0 4.50036 0 0 0 -1.5708</pose>
+          <pose>0.276407 3.76064 -0.011495 0 0 -2.26822</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -138,20 +138,20 @@
         </link>
       </model>
       <model name='road straight_clone_0'>
-        <pose>-1.49971 4.50368 0 0 -0 1.5708</pose>
+        <pose>-0.876128 4.70829 0 0 -0 0.885453</pose>
         <scale>1 1 1</scale>
         <link name='road straight'>
-          <pose>-1.49971 4.50368 0 0 -0 1.5708</pose>
+          <pose>-0.876128 4.70829 0 0 -0 0.885453</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='road straight_clone_0_clone'>
-        <pose>-3 4.49857 0 0 -0 1.5708</pose>
+        <pose>-2.03856 5.65795 0 0 -0 0.883843</pose>
         <scale>1 1 1</scale>
         <link name='road straight'>
-          <pose>-3 4.49857 0 0 -0 1.5708</pose>
+          <pose>-2.03856 5.65795 0 0 -0 0.883843</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -178,7 +178,7 @@
         </link>
       </model>
       <model name='tile plain_clone'>
-        <pose>-1.49572 1.49428 -0 0 -0 0</pose>
+        <pose>-1.49572 1.49428 0 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='tile plain'>
           <pose>-1.49572 1.49428 -0 0 -0 0</pose>
@@ -208,10 +208,10 @@
         </link>
       </model>
       <model name='tile plain_clone_clone_clone'>
-        <pose>-3 3 0 0 -0 0</pose>
+        <pose>-1.52899 4.11065 -0.013196 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='tile plain'>
-          <pose>-3 3 0 0 -0 0</pose>
+          <pose>-1.52899 4.11065 -0.013196 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -233,7 +233,7 @@
     </state>
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose>-12.9945 -4.97197 12.8208 0 0.73161 0.854474</pose>
+        <pose>-3.6234 6.45425 1.10795 0 0.383611 -0.559154</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>
