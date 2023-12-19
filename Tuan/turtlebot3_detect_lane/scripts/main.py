@@ -2,14 +2,15 @@ import rospy
 import numpy as np
 import cv2
 import torch
+import time
+
 from model import TwinLite as net
-import math
 
 from Backend import Backend
 from ControlLane import ControlLane
 
 from sensor_msgs.msg import Image
-from geometry_msgs.msg import Twist
+
 from cv_bridge import CvBridge
 
 def process_image(model, img):
@@ -33,23 +34,47 @@ def process_image(model, img):
 
     DA = da_predict.byte().cpu().data.numpy()[0] * 255
     LL = ll_predict.byte().cpu().data.numpy()[0] * 255
-    # img_rs[DA>100]=[255,0,0]
+    # img_rs[DA > 100]=[255, 0, 0]
     img_rs[LL > 100] = [255, 255, 255]
 
     return img_rs
 
 def image_callback(data):
     global last_angular_vel
+    global process_image_times, backend_node_times, control_lane_times
     
     cv_image = bridge.imgmsg_to_cv2(data, "bgr8")
     cv_image = cv2.resize(cv_image, (1280, 720))
 
+    start = time.time()
     binary_image = process_image(model, cv_image)
+    end = time.time()
+    process_image_times.append(end - start)
 
+    start = time.time()
     backend_node.backend(binary_image)
-    control_lane_node.cbFollowLane(backend_node.invasion)
+    end = time.time()
+    backend_node_times.append(end - start)
+
+    start = time.time()
+    if backend_node.invasion is not None:
+        control_lane_node.cbFollowLane(backend_node.invasion)
+    end = time.time()
+    control_lane_times.append(end - start)
 
     cv2.waitKey(1)
+
+def on_shutdown():
+    save_data()
+    print("Shutting down")
+    cv2.destroyAllWindows()
+
+def save_data():
+    global process_image_times, backend_node_times, control_lane_times
+
+    np.save('process_image_times.npy', process_image_times)
+    np.save('backend_node_times.npy', backend_node_times)
+    np.save('control_lane_times.npy', control_lane_times)
 
 model = net.TwinLiteNet()
 model = torch.nn.DataParallel(model)
@@ -57,17 +82,21 @@ model = model.cuda()
 model.load_state_dict(torch.load("test_/model_0.pth"))
 model.eval()
 
-backend_node = Backend(640, 360)
+process_image_times = []
+backend_node_times = []
+control_lane_times = []
 
+backend_node = Backend(640, 360)
+control_lane_node = ControlLane()
 bridge = CvBridge()
 
 rospy.init_node("get_image", anonymous=True)
 rospy.Subscriber("/camera/image", Image, image_callback)
-control_lane_node = ControlLane()
+rospy.on_shutdown(on_shutdown)
 
 try:
     rospy.spin()
-except KeyboardInterrupt:
+except KeyboardInterrupt:    
     print("Shutting down")
 cv2.destroyAllWindows()
 
