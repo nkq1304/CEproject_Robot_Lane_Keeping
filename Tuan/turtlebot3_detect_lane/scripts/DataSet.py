@@ -109,10 +109,10 @@ class MyDataset(torch.utils.data.Dataset):
         self.Tensor = transforms.ToTensor()
         self.valid = valid
         if valid:
-            self.root = "/home/phox/catkin_ws/src/turtlebot3_detect_lane/scripts/data/bdd100k/images/val"
+            self.root = "data/bdd100k/images/val"
             self.names = os.listdir(self.root)
         else:
-            self.root = "/home/phox/catkin_ws/src/turtlebot3_detect_lane/scripts/data/bdd100k/images/train"
+            self.root = "data/bdd100k/images/train"
             self.names = os.listdir(self.root)
 
     def __len__(self):

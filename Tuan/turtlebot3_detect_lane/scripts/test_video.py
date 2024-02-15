@@ -3,8 +3,6 @@ import numpy as np
 import shutil
 from tqdm.autonotebook import tqdm
 import os
-import os
-import torch
 from model import TwinLite as net
 import cv2
 
@@ -39,13 +37,13 @@ model = net.TwinLiteNet()
 # TODO: If the model was trained with only one GPU, then comment the following line
 model = torch.nn.DataParallel(model)
 model = model.cuda()
-model.load_state_dict(torch.load("pretrained/best.pth"))
+model.load_state_dict(torch.load("test_/model_0.pth"))
 model.eval()
 
 # Set start and end time in seconds
 start = 0
 end = start + 500
-video_name = "project_video"
+video_name = "pp_lane"
 
 video = cv2.VideoCapture("videos/" + video_name + ".mp4")
 video.set(cv2.CAP_PROP_POS_MSEC, start * 1000)
@@ -60,7 +58,7 @@ if end is None or end > video.get(cv2.CAP_PROP_FRAME_COUNT) / fps:
 endFrame = end * fps
 
 fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-out = cv2.VideoWriter("results/" + video_name + ".mp4", fourcc, fps, (640, 360))
+out = cv2.VideoWriter("results/" + video_name + "-before.mp4", fourcc, fps, (640, 360))
 
 while video.isOpened():
     ret, img = video.read()

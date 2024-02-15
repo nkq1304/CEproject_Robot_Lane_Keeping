@@ -1,0 +1,13 @@
+video_path: "videos/example.mp4"
+perspective_transform:
+  src: [[260, 240], [380, 240], [600, 335], [40, 335]]
+  dst: [[100, 0], [540, 0], [540, 360], [100, 360]]
+  debug: True
+lane_fitting:
+  nwindows: 9
+  margin: 50
+  minpix: 50
+  debug: True
+lane_detector:
+  model_path: "pretrained/best.pth"
+  debug: True

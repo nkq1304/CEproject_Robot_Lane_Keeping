@@ -16,8 +16,8 @@ def train_net(args):
     num_gpus = torch.cuda.device_count()
     model = net.TwinLiteNet()
 
-    if num_gpus > 1:
-        model = torch.nn.DataParallel(model)
+
+    model = torch.nn.DataParallel(model)
 
     args.savedir = args.savedir + '/'
 
