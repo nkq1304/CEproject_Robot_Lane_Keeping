@@ -152,11 +152,13 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
-# Png
+# Media
 *.png
 *.jpg
 *.mp4
 *.avi
+
+!Tuan/lane-detector-v2/videos/*.mp4
 
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
