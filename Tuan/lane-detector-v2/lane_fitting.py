@@ -1,7 +1,7 @@
 import numpy as np
 import cv2 as cv
 
-from lane_line import LaneLine, Lane
+from lane_line import LaneLine
 from exceptions.lane import LeftLineNotFound, RightLineNotFound, LaneNotFound
 from frame_debugger import FrameDebugger
 
@@ -12,7 +12,7 @@ class LaneFitting:
         self.minpix = config.get('minpix', 50)
         self.debug = config.get('debug', False)
 
-    def fit(self, black_white_frame) -> Lane | None:
+    def fit(self, black_white_frame) -> tuple[LaneLine, LaneLine] | None:
         img = black_white_frame.copy()
         self.leftx_base, self.rightx_base = self.get_starting_points(img)
 
@@ -66,13 +66,12 @@ class LaneFitting:
             self.visualize_lane(img, None)
             return
 
-        left_line = LaneLine(np.polyfit(lefty, leftx, 2))
-        right_line = LaneLine(np.polyfit(righty, rightx, 2))
-        lane = Lane(left_line, right_line)
+        left_line = LaneLine(lefty, leftx)
+        right_line = LaneLine(righty, rightx)
 
-        self.visualize_lane(img, lane)
+        self.visualize_lane(img, left_line, right_line)
 
-        return lane
+        return left_line, right_line
     
     def validate_lane(self, leftx: np.ndarray, lefty: np.ndarray, rightx: np.ndarray, righty: np.ndarray) -> bool:
         left_lane_found = leftx.size != 0 and lefty.size != 0
@@ -89,18 +88,24 @@ class LaneFitting:
 
         return False
     
-    def visualize_lane(self, img, lane: Lane) -> None:
+    def visualize_lane(self, img, left_line: LaneLine, right_line: LaneLine) -> None:
         if (self.debug is False):
             return
         
-        if (lane is not None):
-            ploty = np.linspace(0, img.shape[0] - 1, img.shape[0])
-            left_fitx = lane.left_line.get_x(ploty)
-            right_fitx = lane.right_line.get_x(ploty)
+        start = 0
+        end = img.shape[0] - 1
+        
+        if (left_line is not None):
+            left_line_points = left_line.get_points(start, end)
 
-            for i in range(img.shape[0]):
-                cv.circle(img, (int(left_fitx[i]), int(ploty[i])), 1, (255, 0, 0), 2)
-                cv.circle(img, (int(right_fitx[i]), int(ploty[i])), 1, (0, 0, 255), 2)
+            for point in left_line_points:
+                cv.circle(img, (int(point[0]), int(point[1])), 1, (255, 0, 0), 2)
+        
+        if (right_line is not None):
+            right_line_points = right_line.get_points(start, end)
+
+            for point in right_line_points:
+                cv.circle(img, (int(point[0]), int(point[1])), 1, (0, 0, 255), 2)
 
         cv.imshow('lane_fitting', img)
 

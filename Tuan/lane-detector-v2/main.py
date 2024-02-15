@@ -26,7 +26,12 @@ if __name__ == '__main__':
             
             lane_frame = lane_detector.detect(frame)
             warped_frame = perspective_transform.warp(lane_frame)
-            lane_fitting.fit(warped_frame)
+            left_line, right_line = lane_fitting.fit(warped_frame)
+
+            unwrapped_left_line = perspective_transform.unwarp_line(left_line)
+            unwrapped_right_line = perspective_transform.unwarp_line(right_line)
+
+            FrameDebugger.draw_lane(unwrapped_left_line, unwrapped_right_line)
 
             FrameDebugger.show()
         else:
