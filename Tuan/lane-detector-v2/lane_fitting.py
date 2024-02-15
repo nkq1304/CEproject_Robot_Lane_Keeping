@@ -62,31 +62,30 @@ class LaneFitting:
         rightx = nonzerox[right_lane_inds]
         righty = nonzeroy[right_lane_inds]
 
-        if self.validate_lane(leftx, lefty, rightx, righty) is False:
-            self.visualize_lane(img, None)
-            return
-
-        left_line = LaneLine(lefty, leftx)
-        right_line = LaneLine(righty, rightx)
+        left_line, right_line = self.validate_lane(leftx, lefty, rightx, righty)
 
         self.visualize_lane(img, left_line, right_line)
 
         return left_line, right_line
     
-    def validate_lane(self, leftx: np.ndarray, lefty: np.ndarray, rightx: np.ndarray, righty: np.ndarray) -> bool:
+    def validate_lane(self, leftx: np.ndarray, lefty: np.ndarray, rightx: np.ndarray, righty: np.ndarray) -> tuple[LaneLine, LaneLine]:
         left_lane_found = leftx.size != 0 and lefty.size != 0
         right_lane_found = rightx.size != 0 and righty.size != 0
 
-        if left_lane_found and right_lane_found: return True
+        if left_lane_found and right_lane_found: 
+            left_line = LaneLine(lefty, leftx)
+            right_line = LaneLine(righty, rightx)
+            return left_line, right_line
 
         if not left_lane_found and not right_lane_found:
             FrameDebugger.draw_error(LaneNotFound())
+            return None, None
         elif not left_lane_found:
             FrameDebugger.draw_error(LeftLineNotFound())
+            return None, LaneLine(righty, rightx)
         elif not right_lane_found:
             FrameDebugger.draw_error(RightLineNotFound())
-
-        return False
+            return LaneLine(lefty, leftx), None
     
     def visualize_lane(self, img, left_line: LaneLine, right_line: LaneLine) -> None:
         if (self.debug is False):

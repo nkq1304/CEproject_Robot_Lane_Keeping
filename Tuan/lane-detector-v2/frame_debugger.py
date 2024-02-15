@@ -36,21 +36,26 @@ class FrameDebugger:
     def draw_lane(left_line: LaneLine, right_line: LaneLine) -> None:
         frame = FrameDebugger.frame
 
-        start = PerspectiveTransform.get_top()
-        end = PerspectiveTransform.get_bottom()
+        left_line_points = []
+        right_line_points = []
 
-        left_line_points = left_line.get_points(start, end)
-        right_line_points = right_line.get_points(start, end)
+        if left_line is not None:
+            left_line_points = left_line.get_points(0, int(frame.shape[0] - 1))
 
-        layer = np.zeros_like(frame)
+        if right_line is not None:
+            right_line_points = right_line.get_points(0, int(frame.shape[0] - 1))
+
+        warp_layer = np.zeros_like(frame)
 
         for point in left_line_points:
-            cv.circle(layer, (int(point[0]), int(point[1])), 3, (255, 0, 0), -1)
+            cv.circle(warp_layer, (int(point[0]), int(point[1])), 6, (255, 0, 0), -1)
 
         for point in right_line_points:
-            cv.circle(layer, (int(point[0]), int(point[1])), 3, (0, 0, 255), -1)
+            cv.circle(warp_layer, (int(point[0]), int(point[1])), 6, (0, 0, 255), -1)
 
-        cv.addWeighted(layer, 0.9, frame, 1, 0, frame)
+        unwarp_layer = PerspectiveTransform.unwarp(warp_layer)
+
+        cv.addWeighted(unwarp_layer, 1, frame, 1, 0, frame)
 
     @staticmethod
     def draw_text(text: str, pos: tuple, color: tuple) -> None:
