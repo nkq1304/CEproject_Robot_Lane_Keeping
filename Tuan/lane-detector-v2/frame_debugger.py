@@ -39,11 +39,14 @@ class FrameDebugger:
         left_line_points = []
         right_line_points = []
 
+        end = frame.shape[0] - 1
+        step = 30
+
         if left_line is not None:
-            left_line_points = left_line.get_points(0, int(frame.shape[0] - 1))
+            left_line_points = left_line.get_points(0, end, step)
 
         if right_line is not None:
-            right_line_points = right_line.get_points(0, int(frame.shape[0] - 1))
+            right_line_points = right_line.get_points(0, end, step)
 
         warp_layer = np.zeros_like(frame)
 

@@ -88,7 +88,7 @@ class LaneFitting:
             return LaneLine(lefty, leftx), None
     
     def visualize_lane(self, img, left_line: LaneLine, right_line: LaneLine) -> None:
-        if (self.debug is False):
+        if not self.debug:
             return
         
         start = 0

@@ -1,5 +1,4 @@
 import cv2
-import numpy as np
 
 from utils.config import Config
 from perspective_transform import PerspectiveTransform

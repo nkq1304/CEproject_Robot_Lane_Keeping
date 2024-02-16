@@ -158,7 +158,12 @@ cython_debug/
 *.mp4
 *.avi
 
-!Tuan/lane-detector-v2/videos/*.mp4
+# Config
+*.yaml
+
+!Tuan/lane-detector-v2/videos/example.mp4
+!Tuan/lane-detector-v2/configs/example.yaml
+!Tuan/lane-detector-v2/configs/example_error_test.yaml
 
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can

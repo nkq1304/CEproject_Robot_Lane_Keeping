@@ -11,13 +11,13 @@ class LaneLine:
     def get_x(self, y: int) -> int:
         return self.a * y ** 2 + self.b * y + self.c
     
-    def get_points(self, start, end) -> list[tuple[int, int]]:
+    def get_points(self, start, end, step = None) -> list[tuple[int, int]]:
         start = int(start)
         end = int(end)
-        step = abs(end - start) + 1
+        step = abs(end - start) + 1 if step is None else int(step)
 
         y = np.linspace(start, end, step)
-        x = [self.get_x(int(y)) for y in y]
+        x = self.get_x(y.astype(int))
 
         return list(zip(x, y))
     
