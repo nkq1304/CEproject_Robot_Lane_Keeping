@@ -20,7 +20,7 @@ class LaneFitting:
 
         contours = self.get_contour(frame)
         self.lanes = self.get_lane(frame, contours)
-        self.visualize_lane(frame)
+        self.visualize_lanes(frame)
 
         return self.lanes
 
@@ -54,12 +54,11 @@ class LaneFitting:
                 continue
 
             rect = cv.minAreaRect(contour)
-            for other_rect in lane_rects:
-                if self.is_overlapping(rect, other_rect):
-                    continue
 
-            box = cv.boxPoints(rect)
-            box = np.int0(box)
+            if any(self.is_overlapping(rect, other_rect) for other_rect in lane_rects):
+                continue
+
+            box = cv.boxPoints(rect).astype(np.int0)
 
             mask = np.zeros_like(frame)
             mask = cv.fillPoly(mask, [box], (255, 255, 255))
@@ -118,7 +117,7 @@ class LaneFitting:
             FrameDebugger.draw_error(RightLineNotFound())
             return LaneLine(lefty, leftx), None
 
-    def visualize_lane(self, img) -> None:
+    def visualize_lanes(self, img) -> None:
         if not self.debug:
             return
 
