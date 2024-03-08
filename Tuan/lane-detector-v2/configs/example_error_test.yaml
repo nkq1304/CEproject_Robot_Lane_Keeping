@@ -1,12 +1,10 @@
 video_path: "videos/example.mp4"
-perspective_transform:
-  src: [[300, 240], [360, 240], [480, 335], [160, 335]]
-  dst: [[0, 0], [640, 0], [640, 360], [0, 360]]
-  debug: True
 lane_fitting:
-  nwindows: 9
-  margin: 100
-  minpix: 50
+  contours:
+    min_area: 800
+    max_area: 1500
+  roi:
+    height: 0.5
   debug: True
 lane_detector:
   model_path: "pretrained/best.pth"

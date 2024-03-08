@@ -5,74 +5,105 @@ from lane_line import LaneLine
 from exceptions.lane import LeftLineNotFound, RightLineNotFound, LaneNotFound
 from frame_debugger import FrameDebugger
 
+DEBUG_LANE_COLORS = [(94, 22, 117), (238, 66, 102), (255, 210, 63), (51, 115, 87)]
+
+
 class LaneFitting:
     def __init__(self, config: dict) -> None:
-        self.nwindows = config.get('nwindows', 9)
-        self.margin = config.get('margin', 100)
-        self.minpix = config.get('minpix', 50)
-        self.debug = config.get('debug', False)
+        self.contours = config["contours"]
+        self.debug = config["debug"]
+        self.lanes = []
 
-    def fit(self, black_white_frame) -> tuple[LaneLine, LaneLine] | None:
-        img = black_white_frame.copy()
-        self.leftx_base, self.rightx_base = self.get_starting_points(img)
+        pass
 
-        leftx_current = self.leftx_base
-        rightx_current = self.rightx_base
+    def fit(self, frame) -> list[LaneLine]:
 
-        nwindows = self.nwindows
-        margin = self.margin
-        minpix = self.minpix
+        contours = self.get_contour(frame)
+        self.lanes = self.get_lane(frame, contours)
+        self.visualize_lane(frame)
 
-        window_height = img.shape[0] // nwindows
-        nonzero = img.nonzero()
-        nonzeroy = np.array(nonzero[0])
-        nonzerox = np.array(nonzero[1])
+        return self.lanes
 
-        left_lane_inds = []
-        right_lane_inds = []
+    def is_overlapping(self, rect1, rect2) -> bool:
+        rect1_center = rect1[0]
+        rect2_center = rect2[0]
 
-        for window in range(nwindows):
-            win_y_low = img.shape[0] - (window + 1) * window_height
-            win_y_high = img.shape[0] - window * window_height
-            win_xleft_low = leftx_current - margin
-            win_xleft_high = leftx_current + margin
-            win_xright_low = rightx_current - margin
-            win_xright_high = rightx_current + margin
+        rect1_half_width = rect1[1][0] / 2
+        rect2_half_width = rect2[1][0] / 2
 
-            if self.debug:
-                cv.rectangle(img, (win_xleft_low, win_y_low), (win_xleft_high, win_y_high), (0, 255, 0), 2)
-                cv.rectangle(img, (win_xright_low, win_y_low), (win_xright_high, win_y_high), (0, 255, 0), 2)
+        rect1_half_height = rect1[1][1] / 2
+        rect2_half_height = rect2[1][1] / 2
 
-            good_left_inds = ((nonzeroy >= win_y_low) & (nonzeroy < win_y_high) & (nonzerox >= win_xleft_low) & (nonzerox < win_xleft_high)).nonzero()[0]
-            good_right_inds = ((nonzeroy >= win_y_low) & (nonzeroy < win_y_high) & (nonzerox >= win_xright_low) & (nonzerox < win_xright_high)).nonzero()[0]
+        x_diff = abs(rect1_center[0] - rect2_center[0])
+        y_diff = abs(rect1_center[1] - rect2_center[1])
 
-            left_lane_inds.append(good_left_inds)
-            right_lane_inds.append(good_right_inds)
+        x_overlap = x_diff < (rect1_half_width + rect2_half_width)
+        y_overlap = y_diff < (rect1_half_height + rect2_half_height)
 
-            if len(good_left_inds) > minpix:
-                leftx_current = np.int32(np.mean(nonzerox[good_left_inds]))
-            if len(good_right_inds) > minpix:
-                rightx_current = np.int32(np.mean(nonzerox[good_right_inds]))
+        return x_overlap and y_overlap
 
-        left_lane_inds = np.concatenate(left_lane_inds)
-        right_lane_inds = np.concatenate(right_lane_inds)
+    def get_lane(self, frame, contours) -> list[LaneLine]:
+        lanes = []
+        lane_rects = []
 
-        leftx = nonzerox[left_lane_inds]
-        lefty = nonzeroy[left_lane_inds]
-        rightx = nonzerox[right_lane_inds]
-        righty = nonzeroy[right_lane_inds]
+        for contour in contours:
+            if (
+                cv.contourArea(contour) < self.contours["min_area"]
+                or cv.contourArea(contour) > self.contours["max_area"]
+            ):
+                continue
 
-        left_line, right_line = self.validate_lane(leftx, lefty, rightx, righty)
+            rect = cv.minAreaRect(contour)
+            for other_rect in lane_rects:
+                if self.is_overlapping(rect, other_rect):
+                    continue
 
-        self.visualize_lane(img, left_line, right_line)
+            box = cv.boxPoints(rect)
+            box = np.int0(box)
 
-        return left_line, right_line
-    
-    def validate_lane(self, leftx: np.ndarray, lefty: np.ndarray, rightx: np.ndarray, righty: np.ndarray) -> tuple[LaneLine, LaneLine]:
+            mask = np.zeros_like(frame)
+            mask = cv.fillPoly(mask, [box], (255, 255, 255))
+            lane_pixels = cv.bitwise_and(frame, mask)
+
+            lane_mask = np.zeros_like(frame)
+            lane_mask = cv.add(lane_mask, lane_pixels)
+
+            nonzero = lane_mask.nonzero()
+            nonzeroy = np.array(nonzero[0])
+            nonzerox = np.array(nonzero[1])
+
+            lane = LaneLine(nonzeroy, nonzerox)
+
+            lane_rects.append(rect)
+            lanes.append(lane)
+
+        return lanes
+
+    def get_contour(self, frame) -> np.ndarray:
+        binary_frame = np.copy(frame)
+        binary_frame[:240, :] = 0
+
+        binary_frame = cv.cvtColor(binary_frame, cv.COLOR_BGR2GRAY)
+        binary_frame = cv.GaussianBlur(binary_frame, (5, 5), 0)
+        binary_frame = cv.threshold(binary_frame, 60, 255, cv.THRESH_BINARY)[1]
+
+        contours, hierarchy = cv.findContours(
+            binary_frame, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE
+        )
+
+        return contours
+
+    def validate_lane(
+        self,
+        leftx: np.ndarray,
+        lefty: np.ndarray,
+        rightx: np.ndarray,
+        righty: np.ndarray,
+    ) -> tuple[LaneLine, LaneLine]:
         left_lane_found = leftx.size != 0 and lefty.size != 0
         right_lane_found = rightx.size != 0 and righty.size != 0
 
-        if left_lane_found and right_lane_found: 
+        if left_lane_found and right_lane_found:
             left_line = LaneLine(lefty, leftx)
             right_line = LaneLine(righty, rightx)
             return left_line, right_line
@@ -86,36 +117,23 @@ class LaneFitting:
         elif not right_lane_found:
             FrameDebugger.draw_error(RightLineNotFound())
             return LaneLine(lefty, leftx), None
-    
-    def visualize_lane(self, img, left_line: LaneLine, right_line: LaneLine) -> None:
+
+    def visualize_lane(self, img) -> None:
         if not self.debug:
             return
-        
-        start = 0
+
+        start = img.shape[0] // 1.5
         end = img.shape[0] - 1
-        
-        if (left_line is not None):
-            left_line_points = left_line.get_points(start, end)
+        middle = start + (end - start) // 2
 
-            for point in left_line_points:
-                cv.circle(img, (int(point[0]), int(point[1])), 1, (255, 0, 0), 2)
-        
-        if (right_line is not None):
-            right_line_points = right_line.get_points(start, end)
+        # sort lane lines by their x value at the bottom of the image
+        self.lanes.sort(key=lambda lane: lane.get_x(middle))
 
-            for point in right_line_points:
-                cv.circle(img, (int(point[0]), int(point[1])), 1, (0, 0, 255), 2)
+        for i, lane in enumerate(self.lanes):
+            lane_points = lane.get_points(start, end)
+            lane_color = DEBUG_LANE_COLORS[i]
 
-        cv.imshow('lane_fitting', img)
+            for point in lane_points:
+                cv.circle(img, (int(point[0]), int(point[1])), 1, lane_color, 2)
 
-    def get_starting_points(self, binary_warped) -> tuple:
-        binary_warped = cv.cvtColor(binary_warped, cv.COLOR_BGR2GRAY)
-        historgram = np.sum(binary_warped[binary_warped.shape[0]//2:, :], axis=0)
-
-        midpoint = historgram.shape[0] // 2
-        leftx_base = np.argmax(historgram[:midpoint])
-        rightx_base = np.argmax(historgram[midpoint:]) + midpoint
-
-        return leftx_base, rightx_base
-
-    
+        cv.imshow("lane_fitting", img)
