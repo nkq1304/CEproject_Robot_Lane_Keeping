@@ -1,15 +1,17 @@
 import cv2
 import numpy as np
 import os
-
+from sklearn.cluster import KMeans
+from scipy.interpolate import splprep, splev
+# from scipy.optimize import curve_fit
 # Setup directory to save frame
-save_in_dir = "D:/HK231/DAMHKTMT/detectLaneGazebo/current/input_frame" 
+save_in_dir = "D:/DATN/detectLaneGazebo/current/input_frame" 
 if not os.path.exists(save_in_dir):
     os.makedirs(save_in_dir)
 # save_in_dir2 = "D:/HK231/DAMHKTMT/detectLaneGazebo/detect_input_frame" 
 # if not os.path.exists(save_in_dir2):
 #     os.makedirs(save_in_dir2)
-save_out_dir = "D:/HK231/DAMHKTMT/detectLaneGazebo/current/output_frame" 
+save_out_dir = "D:/DATN/detectLaneGazebo/current/output_frame" 
 if not os.path.exists(save_out_dir):
     os.makedirs(save_out_dir)
 
@@ -362,14 +364,11 @@ def backend(video_binary, video_original):
         print("Cannot open original video.")
         return 
 
-    # Array of frames, right lines and left lines  
-    frame_array = [] # This frame will use to write to output video
-    frame_model_arr = []
+    # Array of frames, right lines and left lines
     frame_count = 0
     right_lines = []
     left_lines = []
-    error_frame = 0
-
+    # error_frame = 0
     while True:
         ret_model, frame_model = output_model.read()
         ret_ori, frame_ori = original.read()
@@ -377,7 +376,7 @@ def backend(video_binary, video_original):
             # Can't read frame from binary output video of model and original video
             break
         # If frame can read, push frame of original to frame_array
-        frame_array.append(frame_ori)
+        # frame_array.append(frame_ori)
         frame_count = frame_count + 1
         image_name = f"image_{in_img_count}.jpg"
         image_path = os.path.join(save_in_dir, image_name)
@@ -391,142 +390,53 @@ def backend(video_binary, video_original):
         ret, thresh = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU) 
         kernel = np.ones((3, 3), np.uint8) 
         closing = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel, iterations = 2) 
-        frame_model_arr.append(closing)
+        contours, _ = cv2.findContours(closing, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        # frame_model_arr.append(closing)
         lines = cv2.HoughLinesP(closing, 1, np.pi / 180, threshold=50, minLineLength=35, maxLineGap=5)
-
+        
+        points = [] 
         # Detect lane 
         if lines is not None:
             # Determine left and right line based on min(if left) /max (if right) theta angle
             # Then push it into corresponding array
-            left_line = None
-            right_line = None
-            max_left_theta = 0
-            max_right_theta = 0
             for line in lines:
-                x1, y1, x2, y2 = line[0]
-                theta = np.arctan2(y2 - y1, x2 - x1)
-                if theta < 0:
-                    if abs(theta) > max_left_theta:
-                        max_left_theta = abs(theta)
-                        left_line = line
-                elif theta > 0:
-                    if theta > max_right_theta:
-                        max_right_theta = theta
-                        right_line = line
-            right_lines.append(right_line)
-            left_lines.append(left_line)
-            # if left_line is not None: 
-            #     x1, y1, x2, y2 = left_line[0]
-            #     line_left_color = (0, 255, 255) # RED
-            #     cv2.line(frame_model, (x1, y1), (x2, y2), line_left_color, line_thickness) 
-            # if right_line is not None:    
-            #     x1, y1, x2, y2 = right_line[0]
-            #     line_right_color = (255, 255, 0) # GREEN
-            #     cv2.line(frame_model, (x1, y1), (x2, y2), line_right_color, line_thickness)
-            # img = cv2.add(frame_ori, frame_model)
-            # cv2.imshow('Add frame', img)
-            # image_name = f"image_{in_img_count-1}.jpg"
-            # image_path = os.path.join(save_in_dir2, image_name)
-            # cv2.imwrite(image_path, img)
-        if is_first_5_frame != False :
-            # If number of error frame larger than half the number of max frame
-            # or the current frame does not have any errors in lines, 
-            # but the error frame count is greater than 0 frame -> Handle it
-            is_r_lines_have_ef, _, _ = detectErrorLine(right_lines)
-            is_l_lines_have_ef, _, _ = detectErrorLine(left_lines)
-            if (is_l_lines_have_ef or is_r_lines_have_ef):
-                error_frame = error_frame + 1
-                if(error_frame > int(frame_num / 2)):
-                    frame_count = frame_count + error_frame
-                else:
-                    frame_count = frame_count - 1
-            elif error_frame <= int(frame_num / 2) and error_frame > 0:
-                frame_count = frame_count + error_frame
-        
-        # Start processing when there are enough frames:
-        if frame_count == (frame_num + error_frame):
-            # 1. Identify left and right lanes again: Because it is based on the max theta angle, 
-            # error (noisy) lines may exist, so we need to remove/replace them with correct lines.
-            
-            error_count = 0
-            right_lines, right_error = detectLane(right_lines, type_of_line = 'Right', error_frame = error_frame)
-            left_lines, left_error = detectLane(left_lines, type_of_line = 'Left', error_frame = error_frame)
-
-            if error_frame > 0:
-                end = frame_count - 1
-                # while len(left_error) < error_frame:
-                #     left_error.append(0)
-                # while len(right_error) < error_frame:
-                #     right_error.append(0)
-                # if last_left_line is not None:
-                #     print('Last left line: ', last_left_line[0])
-                #     x, _ = findInterWithXAxis(last_left_line)
-                #     if(x >= frame_width or x <= 0):
-                #         print('Last left line out')
-                #     else:
-                #         print('Last left line in')
-                # if last_right_line is not None:
-                #     print('Last right line: ', last_right_line[0])
-                #     x, _ = findInterWithXAxis(last_right_line)
-                #     if(x >= frame_width or x <= 0):
-                #         print('Last right line out')
-                #     else:
-                #         print('Last right line in')
-            else:
-                end = frame_count
-            for l_line, r_line, f_ori, f_mdl, i in zip(left_lines, right_lines, frame_array, frame_model_arr, range(0, end)):
-                # 2. Write this frame into output video
-                # If this frame belong to first 5 frames, write it to output video
-                # Else, only draw on frames that have not been processed yet.
-
-                if (is_first_5_frame == False) or (i >= (frame_num - 1)):
-                    # 1. Draw detected lines on each original frame in frame_array
-                    if error_frame > 0:
-                        drawErrorInFrame(f_ori, left_error[error_count], right_error[error_count])
-                        isHaveErrFrame = detectDrawedErrLine(f_ori, r_line, l_line, minDistance=10)
-                        if isHaveErrFrame == False:
-                            drawInFrame(l_line, r_line, f_ori, f_mdl)
-                            identifyInvasion(l_line, r_line, f_ori, minDistance=5)                              
-                        error_count = error_count + 1
-                    else:
-                        drawInFrame(l_line, r_line, f_ori, f_mdl)
-                        identifyInvasion(l_line, r_line, f_ori, minDistance=5)
-                        org = (25, 50)
-                        cv2.putText(f_ori, 'See two lines', org, font,  fontScale, color, thickness, cv2.LINE_AA)
-                    # if is_first_5_frame != False and error_frame > 0:
-                    #     x1, y1, x2, y2 = last_left_line[0]
-                    #     x3, y3, x4, y4 = last_right_line[0]            
-                    #     print('Left point: %s, %s', x2, y2)
-                    #     print('Right point: %s, %s', x3, y3)
-                    # 2. Determine which lane the turtlebot is encroaching on
-                    
-                    out.write(f_ori)
-                    image_name = f"image_{out_img_count}.jpg"
-                    image_path = os.path.join(save_out_dir, image_name)
-                    cv2.imwrite(image_path, f_ori)
-                    out_img_count += 1
-                    cv2.imshow('Processed Frame', f_ori)
-                    # img = cv2.add(_frame, frame_model)
-                    # cv2.imshow('Add frame', img)
-                if (is_first_5_frame == False) and (i == (frame_num - 1)):    
-                    is_first_5_frame = True
-
-            # 3. Remove some element in frame array, right lines array, left line array
-            if error_frame > 0:
-                error_count = 0
-                # print("Frames: %s, %s", in_img_count - error_frame, in_img_count - 1)
-                right_lines = right_lines[error_frame:]
-                left_lines = left_lines[error_frame:]
-                frame_array = frame_array[error_frame:]
-                frame_model_arr = frame_model_arr[error_frame:]
-                frame_count = frame_count - (error_frame + 1)
-                error_frame = 0  
-            else:
-                right_lines = right_lines[1:]
-                left_lines = left_lines[1:]
-                frame_array = frame_array[1:]
-                frame_model_arr = frame_model_arr[1:]
-                frame_count = frame_count - 1
+                if line is not None:
+                    x1, y1, x2, y2 = line[0]
+                    points.append((x1, y1))
+                    points.append((x2, y2))
+            filtered_boxes = []
+        for cnt in contours:
+            filtered_points = []
+            if cv2.contourArea(cnt) > 100:
+                for point in points:
+                    px, py = point
+                    inside = cv2.pointPolygonTest(cnt, (int(px), int(py)), False)
+                    if inside >= 0:
+                        filtered_points.append(point)
+                if len(filtered_points) > 5:
+                    filtered_boxes.append(filtered_points)
+        centroids = 6
+        for fpt in filtered_boxes:
+            if len(fpt) > 2:
+                kmeans = KMeans(n_clusters=centroids, random_state=0)
+                kmeans.fit(fpt)
+                centers = kmeans.cluster_centers_
+                # for center in centers:
+                #     cv2.circle(image, (int(center[0]), int(center[1])), 5, (0, 0, 255), -1)
+                tck, _ = splprep(centers.T, u=None, s=0.0, per=1)
+                x_new, y_new = splev(np.linspace(0, 1, 100), tck)
+                # f = interp1d(centers[:, 0], centers[:, 1], kind='linear')
+                # # print(centers[:, 0].min(), centers[:, 0].max())
+                # popt, _ = curve_fit(f, centers[:, 0], centers[:, 1])
+                # x_new = np.linspace(centers[:, 0].min(), centers[:, 0].max(), 100)
+                # y_new = f(x_new)
+                cv2.polylines(frame_ori, [np.array([x_new, y_new], np.int32).T], False, (0, 255, 0), 4)                
+        out.write(frame_ori)
+        image_name = f"image_{out_img_count}.jpg"
+        image_path = os.path.join(save_out_dir, image_name)
+        cv2.imwrite(image_path, frame_ori)
+        out_img_count += 1
+        cv2.imshow('Processed Frame', frame_ori)
         
         if cv2.waitKey(1) == ord('q'):
             break   
