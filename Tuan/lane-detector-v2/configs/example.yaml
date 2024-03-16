@@ -1,4 +1,7 @@
 video_path: "videos/example.mp4"
+lane_detector:
+  model_path: "pretrained/best.pth"
+  debug: True
 lane_fitting:
   contours:
     min_area: 800
@@ -6,6 +9,5 @@ lane_fitting:
   roi:
     height: 0.5
   debug: True
-lane_detector:
-  model_path: "pretrained/best.pth"
+lane_tracking:
   debug: True

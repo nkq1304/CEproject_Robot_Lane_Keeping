@@ -2,8 +2,11 @@ import cv2
 import time
 
 from utils.config import Config
+
 from lane_fitting import LaneFitting
 from lane_detector import LaneDetector
+from lane_tracking import LaneTracking
+
 from frame_debugger import FrameDebugger
 
 if __name__ == "__main__":
@@ -11,6 +14,7 @@ if __name__ == "__main__":
 
     lane_fitting = LaneFitting(cfg.lane_fitting)
     lane_detector = LaneDetector(cfg.lane_detector)
+    lane_tracking = LaneTracking(cfg.lane_tracking)
 
     cap = cv2.VideoCapture(cfg.video_path)
 
@@ -28,7 +32,8 @@ if __name__ == "__main__":
             new_frame_time = time.time()
 
             lane_frame = lane_detector.detect(frame)
-            lane_fitting.fit(lane_frame)
+            lanes = lane_fitting.fit(lane_frame)
+            lane_tracking.track(frame, lanes)
 
             fps = str(int(1 / (new_frame_time - prev_frame_time)))
             prev_frame_time = new_frame_time

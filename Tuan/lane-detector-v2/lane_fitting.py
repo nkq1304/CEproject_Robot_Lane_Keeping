@@ -2,8 +2,8 @@ import numpy as np
 import cv2 as cv
 
 from lane_line import LaneLine
-from exceptions.lane import LeftLineNotFound, RightLineNotFound, LaneNotFound
-from frame_debugger import FrameDebugger
+
+from utils.visualize import draw_lane
 
 DEBUG_LANE_COLORS = [(94, 22, 117), (238, 66, 102), (255, 210, 63), (51, 115, 87)]
 
@@ -82,6 +82,7 @@ class LaneFitting:
         binary_frame = np.copy(frame)
         binary_frame[:240, :] = 0
 
+        # Post-processing
         binary_frame = cv.cvtColor(binary_frame, cv.COLOR_BGR2GRAY)
         binary_frame = cv.GaussianBlur(binary_frame, (5, 5), 0)
         binary_frame = cv.threshold(binary_frame, 60, 255, cv.THRESH_BINARY)[1]
@@ -92,47 +93,20 @@ class LaneFitting:
 
         return contours
 
-    def validate_lane(
-        self,
-        leftx: np.ndarray,
-        lefty: np.ndarray,
-        rightx: np.ndarray,
-        righty: np.ndarray,
-    ) -> tuple[LaneLine, LaneLine]:
-        left_lane_found = leftx.size != 0 and lefty.size != 0
-        right_lane_found = rightx.size != 0 and righty.size != 0
-
-        if left_lane_found and right_lane_found:
-            left_line = LaneLine(lefty, leftx)
-            right_line = LaneLine(righty, rightx)
-            return left_line, right_line
-
-        if not left_lane_found and not right_lane_found:
-            FrameDebugger.draw_error(LaneNotFound())
-            return None, None
-        elif not left_lane_found:
-            FrameDebugger.draw_error(LeftLineNotFound())
-            return None, LaneLine(righty, rightx)
-        elif not right_lane_found:
-            FrameDebugger.draw_error(RightLineNotFound())
-            return LaneLine(lefty, leftx), None
-
-    def visualize_lanes(self, img) -> None:
+    def visualize_lanes(self, frame) -> None:
         if not self.debug:
             return
 
-        start = img.shape[0] // 1.5
-        end = img.shape[0] - 1
+        viz_frame = frame.copy()
+
+        start = frame.shape[0] // 1.5
+        end = frame.shape[0] - 1
         middle = start + (end - start) // 2
 
         # sort lane lines by their x value at the bottom of the image
         self.lanes.sort(key=lambda lane: lane.get_x(middle))
 
         for i, lane in enumerate(self.lanes):
-            lane_points = lane.get_points(start, end)
-            lane_color = DEBUG_LANE_COLORS[i]
+            draw_lane(viz_frame, lane, start, end, DEBUG_LANE_COLORS[i])
 
-            for point in lane_points:
-                cv.circle(img, (int(point[0]), int(point[1])), 1, lane_color, 2)
-
-        cv.imshow("lane_fitting", img)
+        cv.imshow("lane_fitting", viz_frame)

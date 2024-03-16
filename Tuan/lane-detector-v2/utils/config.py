@@ -6,8 +6,11 @@ class Config:
         super().__init__()
 
         self.config = self.load_config(config_path)
-        self.lane_fitting = self.config["lane_fitting"]
+
         self.lane_detector = self.config["lane_detector"]
+        self.lane_fitting = self.config["lane_fitting"]
+        self.lane_tracking = self.config["lane_tracking"]
+
         self.video_path = self.config["video_path"]
 
     def load_config(self, config_path: str) -> dict:

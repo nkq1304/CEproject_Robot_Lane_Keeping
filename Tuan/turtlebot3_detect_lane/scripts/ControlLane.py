@@ -6,9 +6,9 @@ from std_msgs.msg import Float64
 from geometry_msgs.msg import Twist
 
 
-class ControlLane():
+class ControlLane:
     def __init__(self):
-        self.pub_cmd_vel = rospy.Publisher('/cmd_vel', Twist, queue_size = 1)
+        self.pub_cmd_vel = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
 
         self.lastError = 0
         self.MAX_VEL = 0.1
@@ -30,7 +30,7 @@ class ControlLane():
 
         angular_z = Kp * error + Kd * (error - self.lastError)
         self.lastError = error
-        
+
         twist = Twist()
         # twist.linear.x = 0.1
         twist.linear.x = min(self.MAX_VEL * ((1 - abs(error) / 500) ** 2.2), 0.05)
@@ -63,13 +63,11 @@ class ControlLane():
 
         # plt.show()
 
-
-        self.pub_cmd_vel.publish(twist) 
+        self.pub_cmd_vel.publish(twist)
         self.save_errors()
 
     def save_errors(self):
-        np.save('errors.npy', self.errors)
-
+        np.save("errors.npy", self.errors)
 
     def main(self):
         rospy.spin()
