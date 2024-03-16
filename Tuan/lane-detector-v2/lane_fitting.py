@@ -5,7 +5,14 @@ from lane_line import LaneLine
 
 from utils.visualize import draw_lane
 
-DEBUG_LANE_COLORS = [(94, 22, 117), (238, 66, 102), (255, 210, 63), (51, 115, 87)]
+DEBUG_LANE_COLORS = [
+    (94, 22, 117),
+    (238, 66, 102),
+    (255, 210, 63),
+    (51, 115, 87),
+    (0, 127, 115),
+    (255, 210, 63),
+]
 
 
 class LaneFitting:
@@ -101,7 +108,7 @@ class LaneFitting:
 
         start = frame.shape[0] // 1.5
         end = frame.shape[0] - 1
-        middle = start + (end - start) // 2
+        middle = frame.shape[0] * 0.75
 
         # sort lane lines by their x value at the bottom of the image
         self.lanes.sort(key=lambda lane: lane.get_x(middle))

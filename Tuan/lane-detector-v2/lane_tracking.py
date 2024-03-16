@@ -24,7 +24,7 @@ class LaneTracking:
         pass
 
     def process_frame(self, frame, lanes: list[LaneLine]) -> tuple[LaneLine, LaneLine]:
-        y = frame.shape[0] // 4
+        y = frame.shape[0] * 0.75
         mid_x = frame.shape[1] // 2
 
         if len(lanes) == 0:
@@ -54,7 +54,7 @@ class LaneTracking:
         end = img.shape[0] - 1
 
         draw_lane(viz_frame, left_lane, start, end)
-        draw_lane(viz_frame, right_lane, start, end)
+        draw_lane(viz_frame, right_lane, start, end, (255, 0, 0))
 
         cv2.imshow("lane_tracking", viz_frame)
 

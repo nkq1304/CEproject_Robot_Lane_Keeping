@@ -6,8 +6,6 @@ lane_fitting:
   contours:
     min_area: 800
     max_area: 2000
-  roi:
-    height: 0.5
   debug: True
 lane_tracking:
   debug: True
