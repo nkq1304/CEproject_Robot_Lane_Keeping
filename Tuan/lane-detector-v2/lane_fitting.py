@@ -27,6 +27,10 @@ class LaneFitting:
 
         contours = self.get_contour(frame)
         self.lanes = self.get_lane(frame, contours)
+
+        # Sort lanes by x position
+        self.lanes.sort(key=lambda lane: lane.get_x(frame.shape[0] * 0.75))
+
         self.visualize_lanes(frame)
 
         return self.lanes
@@ -108,10 +112,6 @@ class LaneFitting:
 
         start = frame.shape[0] // 1.5
         end = frame.shape[0] - 1
-        middle = frame.shape[0] * 0.75
-
-        # sort lane lines by their x value at the bottom of the image
-        self.lanes.sort(key=lambda lane: lane.get_x(middle))
 
         for i, lane in enumerate(self.lanes):
             draw_lane(viz_frame, lane, start, end, DEBUG_LANE_COLORS[i])
