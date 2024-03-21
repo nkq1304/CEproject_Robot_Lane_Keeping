@@ -40,7 +40,7 @@ class LaneDetector:
             img = img.cuda().float() / 255.0
             img = img.cuda()
         else:
-            img = img.float() / 255.0
+            img = img / 255.0
 
         with torch.no_grad():
             img_out = self.model(img)
