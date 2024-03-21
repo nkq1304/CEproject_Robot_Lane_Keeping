@@ -24,3 +24,27 @@ class LaneLine:
 
     def get_curvature(self, y) -> float:
         return ((1 + (2 * self.a * y + self.b) ** 2) ** 1.5) / np.absolute(2 * self.a)
+
+    def get_intersection(self, other, frame) -> tuple[int, int]:
+        a = self.a - other.a
+        b = self.b - other.b
+        c = self.c - other.c
+
+        delta = b**2 - 4 * a * c
+
+        if delta < 0:
+            return None
+
+        y1 = (-b + np.sqrt(delta)) / (2 * a)
+        y2 = (-b - np.sqrt(delta)) / (2 * a)
+
+        height = frame.shape[0]
+
+        if 0 < y1 < height:
+            y = y1
+        elif 0 < y2 < height:
+            y = y2
+        else:
+            return None
+
+        return int(self.get_x(y)), int(y)

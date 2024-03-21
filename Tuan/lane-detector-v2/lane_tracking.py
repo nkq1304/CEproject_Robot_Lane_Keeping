@@ -5,7 +5,7 @@ from lane_line import LaneLine
 from exceptions.lane import LeftLineNotFound, RightLineNotFound, LaneNotFound
 from frame_debugger import FrameDebugger
 
-from utils.visualize import draw_lane
+from utils.visualize import draw_lane, draw_intersection
 
 
 class LaneTracking:
@@ -17,8 +17,8 @@ class LaneTracking:
     def track(self, frame, lanes: list[LaneLine]) -> None:
         left_lane, right_lane = self.process_frame(frame, lanes)
 
-        self.visualize_lanes(frame, left_lane, right_lane)
         self.kalman_filter(left_lane, right_lane)
+        self.visualize(frame, self.prev_left_lane, self.prev_right_lane)
         self.frame_debugger()
 
         pass
@@ -44,7 +44,7 @@ class LaneTracking:
 
         return None, None
 
-    def visualize_lanes(self, img, left_lane: LaneLine, right_lane: LaneLine) -> None:
+    def visualize(self, img, left_lane: LaneLine, right_lane: LaneLine) -> None:
         if not self.debug:
             return
 
@@ -53,8 +53,11 @@ class LaneTracking:
         start = img.shape[0] // 1.5
         end = img.shape[0] - 1
 
+        intersection = left_lane.get_intersection(right_lane, viz_frame)
+
         draw_lane(viz_frame, left_lane, start, end)
         draw_lane(viz_frame, right_lane, start, end, (255, 0, 0))
+        draw_intersection(viz_frame, intersection)
 
         cv2.imshow("lane_tracking", viz_frame)
 
