@@ -1,11 +1,8 @@
 import rospy
-import numpy as np
 import cv2
-import torch
-import time
 
 from sensor_msgs.msg import Image
-from cv_bridge import CvBridge, CvBridgeError
+from cv_bridge import CvBridge
 
 from lane_detector import LaneDetector
 
