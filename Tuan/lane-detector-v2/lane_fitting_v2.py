@@ -142,10 +142,9 @@ class LaneFittingV2:
 
             if len(self.nonzero_pixel_x[pixel_index_on_window_i]) > 0:
                 drawn_windows.append(window)
-
-            window_x_mid = np.int32(
-                np.mean(self.nonzero_pixel_x[pixel_index_on_window_i])
-            )
+                window_x_mid = np.int32(
+                    np.mean(self.nonzero_pixel_x[pixel_index_on_window_i])
+                )
 
         return (
             pixel_index_on_lane,
