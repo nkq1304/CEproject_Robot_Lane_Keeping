@@ -16,3 +16,18 @@ def draw_intersection(frame, intersection):
 
     cv2.circle(frame, (intersection[0], intersection[1]), 5, (0, 0, 255), -1)
     return frame
+
+
+def draw_window(frame, window, color=(0, 255, 0)):
+    if window is None:
+        return frame
+
+    cv2.rectangle(
+        frame,
+        (window.left, window.top),
+        (window.right, window.bottom),
+        color,
+        2,
+    )
+
+    return frame

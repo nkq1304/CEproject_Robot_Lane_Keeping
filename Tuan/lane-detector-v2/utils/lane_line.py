@@ -9,6 +9,14 @@ class LaneLine:
         self.b = poly_fit[1]
         self.c = poly_fit[2]
 
+    @classmethod
+    def from_coefficients(cls, a, b, c) -> "LaneLine":
+        lane = cls.__new__(cls)
+        lane.a = a
+        lane.b = b
+        lane.c = c
+        return lane
+
     def get_x(self, y: int) -> int:
         return self.a * y**2 + self.b * y + self.c
 

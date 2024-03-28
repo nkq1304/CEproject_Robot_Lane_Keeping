@@ -3,7 +3,8 @@ import time
 
 from utils.config import Config
 
-from lane_fitting import LaneFitting
+from perspective_transform import PerspectiveTransform
+from lane_fitting_v2 import LaneFittingV2
 from lane_detector import LaneDetector
 from lane_tracking import LaneTracking
 
@@ -12,7 +13,8 @@ from frame_debugger import FrameDebugger
 if __name__ == "__main__":
     cfg = Config("configs/example.yaml")
 
-    lane_fitting = LaneFitting(cfg.lane_fitting)
+    perspective_transform = PerspectiveTransform(cfg.perspective_transform)
+    lane_fitting = LaneFittingV2(cfg.lane_fitting)
     lane_detector = LaneDetector(cfg.lane_detector)
     lane_tracking = LaneTracking(cfg.lane_tracking)
 
@@ -32,8 +34,9 @@ if __name__ == "__main__":
             new_frame_time = time.time()
 
             lane_frame = lane_detector.detect(frame)
-            lanes = lane_fitting.fit(lane_frame)
-            lane_tracking.track(frame, lanes)
+            warp_frame = perspective_transform.get_sky_view(lane_frame)
+            lanes = lane_fitting.fit(warp_frame)
+            # lane_tracking.track(frame, lanes)
 
             fps = str(int(1 / (new_frame_time - prev_frame_time)))
             prev_frame_time = new_frame_time

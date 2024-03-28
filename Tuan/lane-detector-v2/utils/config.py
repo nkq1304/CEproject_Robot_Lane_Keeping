@@ -7,6 +7,7 @@ class Config:
 
         self.config = self.load_config(config_path)
 
+        self.perspective_transform = self.config["perspective_transform"]
         self.lane_detector = self.config["lane_detector"]
         self.lane_fitting = self.config["lane_fitting"]
         self.lane_tracking = self.config["lane_tracking"]

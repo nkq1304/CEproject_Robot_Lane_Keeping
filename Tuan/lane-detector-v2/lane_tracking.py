@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 
-from lane_line import LaneLine
+from utils.lane_line import LaneLine
 from exceptions.lane import LeftLineNotFound, RightLineNotFound, LaneNotFound
 from frame_debugger import FrameDebugger
 
@@ -20,8 +20,6 @@ class LaneTracking:
         self.kalman_filter(left_lane, right_lane)
         self.visualize(frame, self.prev_left_lane, self.prev_right_lane)
         self.frame_debugger()
-
-        pass
 
     def process_frame(self, frame, lanes: list[LaneLine]) -> tuple[LaneLine, LaneLine]:
         y = frame.shape[0] * 0.75
@@ -52,6 +50,9 @@ class LaneTracking:
 
         start = img.shape[0] // 1.5
         end = img.shape[0] - 1
+
+        if left_lane is None or right_lane is None:
+            return
 
         intersection = left_lane.get_intersection(right_lane, viz_frame)
 

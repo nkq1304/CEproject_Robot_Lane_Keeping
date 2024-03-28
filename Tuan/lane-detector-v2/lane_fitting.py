@@ -1,7 +1,7 @@
 import numpy as np
 import cv2 as cv
 
-from lane_line import LaneLine
+from utils.lane_line import LaneLine
 
 from utils.visualize import draw_lane
 
@@ -20,8 +20,6 @@ class LaneFitting:
         self.contours = config["contours"]
         self.debug = config["debug"]
         self.lanes = []
-
-        pass
 
     def fit(self, frame) -> list[LaneLine]:
 
