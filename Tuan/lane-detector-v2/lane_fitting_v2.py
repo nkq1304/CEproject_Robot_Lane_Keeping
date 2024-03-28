@@ -50,8 +50,6 @@ class LaneFittingV2:
 
         self.histogram = self.histogram_seeded(self.binary_frame)
 
-        cv.imshow("binary_frame", self.binary_frame)
-
     def fit(self, frame) -> list[LaneLine]:
         self.window_start(frame)
 
@@ -102,16 +100,15 @@ class LaneFittingV2:
             if len(drawn_windows) == 0:
                 continue
 
-            # Draw windows
-            self.draw_windows(
-                drawn_windows, DEBUG_LANE_COLORS[i % len(DEBUG_LANE_COLORS)]
-            )
+            if self.debug:
+                self.draw_windows(
+                    drawn_windows, DEBUG_LANE_COLORS[i % len(DEBUG_LANE_COLORS)]
+                )
 
             curve.append(i)
 
-        print("Lane found", len(curve))
-
-        cv.imshow("viz_frame", self.viz_frame)
+        if self.debug:
+            cv.imshow("lane_fitting_v2", self.viz_frame)
 
     def sliding_window(self, window_x_mid, mask_found_index_on_any_lane):
         pixel_index_on_lane = np.array([], dtype=np.int64)
