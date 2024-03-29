@@ -2,12 +2,20 @@ import numpy as np
 
 
 class LaneLine:
-    def __init__(self, lefty, leftx) -> None:
+    def __init__(self, lefty, leftx, start=0, end=0, dist=0) -> None:
         poly_fit = np.polyfit(lefty, leftx, 2)
 
         self.a = poly_fit[0]
         self.b = poly_fit[1]
         self.c = poly_fit[2]
+
+        self.start = start
+        self.end = end
+
+        self.dist = dist
+        self.abs_dist = abs(dist)
+
+        self.drawn_windows = []
 
     @classmethod
     def from_coefficients(cls, a, b, c) -> "LaneLine":
@@ -21,11 +29,15 @@ class LaneLine:
         return self.a * y**2 + self.b * y + self.c
 
     def get_points(self, start, end, step=None) -> list[tuple[int, int]]:
-        start = int(start)
-        end = int(end)
-        step = abs(end - start) + 1 if step is None else int(step)
+        self.start = start
+        self.end = end
 
-        y = np.linspace(start, end, step)
+        return self.get_points(step)
+
+    def get_points(self, step=None) -> list[tuple[int, int]]:
+        step = abs(self.end - self.start) + 1 if step is None else int(step)
+
+        y = np.linspace(self.start, self.end, step)
         x = self.get_x(y.astype(int))
 
         return list(zip(x, y))

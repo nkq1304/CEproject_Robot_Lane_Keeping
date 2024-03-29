@@ -56,9 +56,9 @@ class LaneTracking:
 
         intersection = left_lane.get_intersection(right_lane, viz_frame)
 
-        draw_lane(viz_frame, left_lane, start, end)
-        draw_lane(viz_frame, right_lane, start, end, (255, 0, 0))
-        draw_intersection(viz_frame, intersection)
+        draw_lane(viz_frame, left_lane)
+        draw_lane(viz_frame, right_lane, (255, 0, 0))
+        # draw_intersection(viz_frame, intersection)
 
         cv2.imshow("lane_tracking", viz_frame)
 

@@ -19,7 +19,6 @@ lane_fitting:
     min_pixels: 50
     max_pixels: 4500
   histogram:
-    width: 75
     height_ratio: 0.7
     seed: 64
   debug: True

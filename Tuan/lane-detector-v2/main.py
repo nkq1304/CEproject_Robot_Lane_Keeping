@@ -33,10 +33,18 @@ if __name__ == "__main__":
 
             new_frame_time = time.time()
 
+            # Detect lanes with TwinLiteNet
             lane_frame = lane_detector.detect(frame)
-            warp_frame = perspective_transform.get_sky_view(lane_frame)
-            lanes = lane_fitting.fit(warp_frame)
-            # lane_tracking.track(frame, lanes)
+
+            # Perspective transform
+            warp_frame = perspective_transform.get_sky_view(frame)
+            warp_lane_frame = perspective_transform.get_sky_view(lane_frame)
+
+            # Fit lanes
+            lanes = lane_fitting.fit(warp_lane_frame)
+
+            # Track left and right lanes
+            left_right_lanes = lane_tracking.track(warp_frame, lanes)
 
             fps = str(int(1 / (new_frame_time - prev_frame_time)))
             prev_frame_time = new_frame_time

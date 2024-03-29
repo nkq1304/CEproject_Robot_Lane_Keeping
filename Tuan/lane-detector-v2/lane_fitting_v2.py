@@ -55,11 +55,9 @@ class LaneFittingV2:
 
         histogram = self.histogram
 
-        width_center = self.frame_width_center
         pixel_index_on_any_lane = np.array([], dtype=np.int64)
 
-        # Find curve on the left side
-        curve = []
+        lanes: list[LaneLine] = []
 
         for i in range(0, 15):
             max_x = self.corrector_window_start(np.argmax(histogram))
@@ -100,15 +98,24 @@ class LaneFittingV2:
             if len(drawn_windows) == 0:
                 continue
 
-            if self.debug:
-                self.draw_windows(
-                    drawn_windows, DEBUG_LANE_COLORS[i % len(DEBUG_LANE_COLORS)]
-                )
+            lane = self.lane_extrapolation(pixel_index_on_lane, pixel_index_on_windows)
 
-            curve.append(i)
+            if lane is None:
+                continue
+
+            lanes.append(lane)
+            lane.dist = np.mean(
+                [window.x - self.frame_width_center for window in drawn_windows]
+            )
+            lane.drawn_windows = drawn_windows
+
+        lanes.sort(key=lambda lane: lane.dist)
 
         if self.debug:
+            self.draw_lanes(lanes)
             cv.imshow("lane_fitting_v2", self.viz_frame)
+
+        return lanes
 
     def sliding_window(self, window_x_mid, mask_found_index_on_any_lane):
         pixel_index_on_lane = np.array([], dtype=np.int64)
@@ -181,6 +188,24 @@ class LaneFittingV2:
 
         return np.nonzero(mask_inside)[0][:]
 
+    def lane_extrapolation(
+        self, pixel_index_on_lane, pixel_index_on_windows
+    ) -> LaneLine:
+        if len(pixel_index_on_lane) == 0:
+            return None
+
+        x = self.nonzero_pixel_x[pixel_index_on_lane]
+        y = self.nonzero_pixel_y[pixel_index_on_lane]
+
+        if len(x) < 3:
+            return None
+
+        lane = LaneLine(y, x)
+        lane.start = y[np.argmax(y)]
+        lane.end = y[np.argmin(y)]
+
+        return lane
+
     def pre_processing(self, frame) -> np.ndarray:
         binary_frame = np.copy(frame)
 
@@ -191,9 +216,14 @@ class LaneFittingV2:
 
         return binary_frame
 
-    def draw_windows(self, drawn_windows, window_color):
-        for window in drawn_windows:
-            draw_window(self.viz_frame, window, window_color)
+    def draw_lanes(self, lanes):
+        for i, lane in enumerate(lanes):
+            color = DEBUG_LANE_COLORS[i % len(DEBUG_LANE_COLORS)]
+
+            draw_lane(self.viz_frame, lane, color)
+
+            for window in lane.drawn_windows:
+                draw_window(self.viz_frame, window, color)
 
     def histogram_seeded(self, binary_frame) -> np.ndarray:
         histogram_slice_num = self.frame_width // self.histogram_seed
