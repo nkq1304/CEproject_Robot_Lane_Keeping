@@ -14,12 +14,14 @@ class LaneTracking:
         self.prev_left_lane = None
         self.prev_right_lane = None
 
-    def track(self, frame, lanes: list[LaneLine]) -> None:
+    def track(self, frame, lanes: list[LaneLine]) -> tuple[LaneLine, LaneLine]:
         left_lane, right_lane = self.process_frame(frame, lanes)
 
         self.kalman_filter(left_lane, right_lane)
         self.visualize(frame, self.prev_left_lane, self.prev_right_lane)
         self.frame_debugger()
+
+        return self.prev_left_lane, self.prev_right_lane
 
     def process_frame(self, frame, lanes: list[LaneLine]) -> tuple[LaneLine, LaneLine]:
         y = frame.shape[0] * 0.75

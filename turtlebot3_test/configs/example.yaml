@@ -1,0 +1,3 @@
+lane_detector:
+  model_path: "pretrained/best.pth"
+  debug: True

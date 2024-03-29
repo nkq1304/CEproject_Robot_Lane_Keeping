@@ -44,7 +44,7 @@ if __name__ == "__main__":
             lanes = lane_fitting.fit(warp_lane_frame)
 
             # Track left and right lanes
-            left_right_lanes = lane_tracking.track(warp_frame, lanes)
+            left_lane, right_lane = lane_tracking.track(warp_frame, lanes)
 
             fps = str(int(1 / (new_frame_time - prev_frame_time)))
             prev_frame_time = new_frame_time
