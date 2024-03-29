@@ -48,9 +48,6 @@ class LaneTracking:
 
         viz_frame = img.copy()
 
-        start = img.shape[0] // 1.5
-        end = img.shape[0] - 1
-
         if left_lane is None or right_lane is None:
             return
 
