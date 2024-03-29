@@ -4,6 +4,7 @@ import cv2
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 
+from utils.config import Config
 from lane_detector import LaneDetector
 
 
