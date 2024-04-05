@@ -1,7 +1,7 @@
 import cv2
 
 from utils.config import Config
-from backend.backend import Backend
+from modules.backend.backend import Backend
 
 if __name__ == "__main__":
     cfg = Config("configs/example.yaml")

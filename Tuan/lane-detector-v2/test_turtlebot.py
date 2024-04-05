@@ -5,7 +5,7 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 
 from utils.config import Config
-from backend.lane_detector import LaneDetector
+from modules.backend.lane_detector import LaneDetector
 
 
 def image_callback(data):

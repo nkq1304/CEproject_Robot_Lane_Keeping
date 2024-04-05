@@ -3,12 +3,12 @@ import time
 
 from utils.config import Config
 
-from backend.perspective_transform import PerspectiveTransform
-from backend.lane_fitting_v2 import LaneFittingV2
-from backend.lane_detector import LaneDetector
-from backend.lane_tracking import LaneTracking
+from modules.backend.perspective_transform import PerspectiveTransform
+from modules.backend.lane_fitting_v2 import LaneFittingV2
+from modules.backend.lane_detector import LaneDetector
+from modules.backend.lane_tracking import LaneTracking
 
-from backend.frame_debugger import FrameDebugger
+from modules.backend.frame_debugger import FrameDebugger
 
 
 class Backend:

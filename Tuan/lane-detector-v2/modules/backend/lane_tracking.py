@@ -3,7 +3,7 @@ import cv2
 
 from utils.lane_line import LaneLine
 from exceptions.lane import LeftLineNotFound, RightLineNotFound, LaneNotFound
-from backend.frame_debugger import FrameDebugger
+from modules.backend.frame_debugger import FrameDebugger
 
 from utils.visualize import draw_lane, draw_intersection
 
