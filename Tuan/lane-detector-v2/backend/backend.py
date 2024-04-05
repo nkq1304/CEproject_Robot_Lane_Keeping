@@ -12,9 +12,7 @@ from backend.frame_debugger import FrameDebugger
 
 
 class Backend:
-    def __init__(self) -> None:
-        cfg = Config("configs/example.yaml")
-
+    def __init__(self, cfg) -> None:
         self.perspective_transform = PerspectiveTransform(cfg.perspective_transform)
         self.lane_fitting = LaneFittingV2(cfg.lane_fitting)
         self.lane_detector = LaneDetector(cfg.lane_detector)

@@ -6,7 +6,7 @@ from backend.backend import Backend
 if __name__ == "__main__":
     cfg = Config("configs/example.yaml")
 
-    backend = Backend()
+    backend = Backend(cfg)
 
     cap = cv2.VideoCapture(cfg.video_path)
 
