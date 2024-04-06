@@ -165,6 +165,7 @@ cython_debug/
 !Tuan/lane-detector-v2/configs/example.yaml
 !Tuan/lane-detector-v2/configs/example_error_test.yaml
 !turtlebot3_test/configs/example.yaml
+!turtlebot3_test/configs/turtlebot.yaml
 
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can

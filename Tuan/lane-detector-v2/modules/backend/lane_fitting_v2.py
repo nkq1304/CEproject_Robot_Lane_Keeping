@@ -8,6 +8,8 @@ from utils.window import Window
 
 from utils.visualize import draw_lane, draw_window
 
+from modules.backend.image_publisher import ImagePublisher
+
 DEBUG_LANE_COLORS = [
     (94, 22, 117),
     (238, 66, 102),
@@ -110,9 +112,7 @@ class LaneFittingV2:
 
         lanes.sort(key=lambda lane: lane.dist)
 
-        if self.debug:
-            self.draw_lanes(lanes)
-            cv.imshow("lane_fitting_v2", self.viz_frame)
+        self.visualize(lanes)
 
         return lanes
 
@@ -276,3 +276,14 @@ class LaneFittingV2:
                 break
 
         return max_x_at_start
+
+    def visualize(self, lanes):
+        if not self.debug:
+            return
+        
+        self.draw_lanes(lanes)
+    
+        if ImagePublisher.lane_fitting is not None:
+            ImagePublisher.publish_lane_fitting(self.viz_frame)
+        else:
+            cv.imshow("lane_fitting_v2", self.viz_frame)

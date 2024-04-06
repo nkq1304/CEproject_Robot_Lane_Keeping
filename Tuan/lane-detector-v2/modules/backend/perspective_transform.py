@@ -1,6 +1,7 @@
 import cv2 as cv
 import numpy as np
 
+from modules.backend.image_publisher import ImagePublisher
 
 class PerspectiveTransform:
     src = None
@@ -16,9 +17,12 @@ class PerspectiveTransform:
         self.M = cv.getPerspectiveTransform(self.src, self.dst)
         PerspectiveTransform.Minv = cv.getPerspectiveTransform(self.dst, self.src)
 
-    def get_sky_view(self, img):
+    def get_sky_view(self, img, debug=True):
         img_size = (img.shape[1], img.shape[0])
-        self.visualize(img)
+
+        if debug:
+            self.visualize(img)
+            
         return cv.warpPerspective(img, self.M, img_size, flags=cv.INTER_LINEAR)
 
     @staticmethod
@@ -29,7 +33,7 @@ class PerspectiveTransform:
         )
 
     def visualize(self, img) -> None:
-        if self.debug is False:
+        if not self.debug:
             return
 
         src = np.int32(self.src)
@@ -40,7 +44,10 @@ class PerspectiveTransform:
         cv.fillPoly(layer, [src], (0, 0, 255))
         cv.addWeighted(layer, 0.3, visualize_img, 1, 0, visualize_img)
 
-        cv.imshow("perspective_transform", visualize_img)
+        if ImagePublisher.perspective_transform is not None:
+            ImagePublisher.publish_perspective_transform(visualize_img)
+        else:
+            cv.imshow("perspective_transform", visualize_img)
 
     def get_top() -> int:
         return PerspectiveTransform.src[0][1]

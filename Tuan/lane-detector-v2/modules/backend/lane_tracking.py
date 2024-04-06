@@ -5,10 +5,11 @@ from typing import List, Tuple
 
 from utils.lane_line import LaneLine
 from exceptions.lane import LeftLineNotFound, RightLineNotFound, LaneNotFound
+
 from modules.backend.frame_debugger import FrameDebugger
+from modules.backend.image_publisher import ImagePublisher
 
 from utils.visualize import draw_lane, draw_intersection
-
 
 class LaneTracking:
     def __init__(self, config: dict) -> None:
@@ -58,7 +59,10 @@ class LaneTracking:
         draw_lane(viz_frame, right_lane, (255, 0, 0))
         # draw_intersection(viz_frame, intersection)
 
-        cv2.imshow("lane_tracking", viz_frame)
+        if ImagePublisher.lane_tracking is not None:
+            ImagePublisher.publish_lane_tracking(viz_frame)
+        else:
+            cv2.imshow("lane_tracking", viz_frame)
 
     def kalman_filter(self, left_lane: LaneLine, right_lane: LaneLine) -> None:
         if left_lane is not None:

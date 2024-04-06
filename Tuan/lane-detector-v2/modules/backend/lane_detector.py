@@ -3,6 +3,8 @@ import numpy as np
 from model import TwinLite as net
 import cv2
 
+from modules.backend.image_publisher import ImagePublisher
+
 
 class LaneDetector:
     def __init__(self, config: dict) -> None:
@@ -55,9 +57,19 @@ class LaneDetector:
 
         binary_img[LL > 100] = [255, 255, 255]
 
-        if self.debug:
-            visualize_img = img_copy.copy()
-            visualize_img[LL > 100] = [0, 0, 255]
-            cv2.imshow("lane_detector", visualize_img)
+        self.visualize(img_copy, LL)
 
         return binary_img
+    
+    def visualize(self, img, LL):
+        if not self.debug:
+            return
+        
+        visualize_img = img.copy()
+        visualize_img[LL > 100] = [0, 0, 255]
+
+        if ImagePublisher.lane_detector is not None:
+            ImagePublisher.publish_lane_detector(visualize_img)
+            return
+        else:
+            cv2.imshow("lane_detector", visualize_img)

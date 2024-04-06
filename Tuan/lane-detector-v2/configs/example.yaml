@@ -1,7 +1,13 @@
 video_path: "videos/example.mp4"
+image_transform:
+  vertical_flip: False
+  horizontal_flip: False
+  debug: True
 perspective_transform:
   src: [[260, 240], [380, 240], [600, 335], [40, 335]]
   dst: [[220, 0], [420, 0], [420, 340], [220, 340]]
+  vertical_flip: False
+  horizontal_flip: False
   debug: True
 lane_detector:
   model_path: "pretrained/best.pth"
