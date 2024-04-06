@@ -1,5 +1,5 @@
 import numpy as np
-
+from typing import List, Tuple
 
 class LaneLine:
     def __init__(self, lefty, leftx, start=0, end=0, dist=0) -> None:
@@ -28,13 +28,13 @@ class LaneLine:
     def get_x(self, y: int) -> int:
         return self.a * y**2 + self.b * y + self.c
 
-    def get_points(self, start, end, step=None) -> list[tuple[int, int]]:
+    def get_points(self, start, end, step=None) -> List[Tuple[int, int]]:
         self.start = start
         self.end = end
 
         return self.get_points(step)
 
-    def get_points(self, step=None) -> list[tuple[int, int]]:
+    def get_points(self, step=None) -> List[Tuple[int, int]]:
         step = abs(self.end - self.start) + 1 if step is None else int(step)
 
         y = np.linspace(self.start, self.end, step)
@@ -45,7 +45,7 @@ class LaneLine:
     def get_curvature(self, y) -> float:
         return ((1 + (2 * self.a * y + self.b) ** 2) ** 1.5) / np.absolute(2 * self.a)
 
-    def get_intersection(self, other, frame) -> tuple[int, int]:
+    def get_intersection(self, other, frame) -> Tuple[int, int]:
         a = self.a - other.a
         b = self.b - other.b
         c = self.c - other.c

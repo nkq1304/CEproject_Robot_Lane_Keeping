@@ -1,6 +1,8 @@
 import numpy as np
 import cv2
 
+from typing import List, Tuple
+
 from utils.lane_line import LaneLine
 from exceptions.lane import LeftLineNotFound, RightLineNotFound, LaneNotFound
 from modules.backend.frame_debugger import FrameDebugger
@@ -14,7 +16,7 @@ class LaneTracking:
         self.prev_left_lane = None
         self.prev_right_lane = None
 
-    def track(self, frame, lanes: list[LaneLine]) -> tuple[LaneLine, LaneLine]:
+    def track(self, frame, lanes: List[LaneLine]) -> Tuple[LaneLine, LaneLine]:
         left_lane, right_lane = self.process_lanes(lanes)
 
         self.kalman_filter(left_lane, right_lane)
@@ -23,7 +25,7 @@ class LaneTracking:
 
         return self.prev_left_lane, self.prev_right_lane
 
-    def process_lanes(self, lanes: list[LaneLine]) -> tuple[LaneLine, LaneLine]:
+    def process_lanes(self, lanes: List[LaneLine]) -> Tuple[LaneLine, LaneLine]:
         if len(lanes) == 0:
             return None, None
 

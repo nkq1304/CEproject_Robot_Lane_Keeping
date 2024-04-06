@@ -1,6 +1,8 @@
 import numpy as np
 import cv2 as cv
 
+from typing import List
+
 from utils.lane_line import LaneLine
 from utils.window import Window
 
@@ -47,7 +49,7 @@ class LaneFittingV2:
 
         self.histogram = self.histogram_seeded(self.binary_frame)
 
-    def fit(self, frame) -> list[LaneLine]:
+    def fit(self, frame) -> List[LaneLine]:
         self.window_start(frame)
 
         histogram = self.histogram
