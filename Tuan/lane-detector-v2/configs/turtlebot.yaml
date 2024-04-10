@@ -1,0 +1,32 @@
+video_path: "videos/example.mp4"
+image_transform:
+  vertical_flip: True
+  horizontal_flip: True
+  debug: True
+perspective_transform:
+  src: [[260, 120], [380, 120], [640, 365], [0, 365]]
+  dst: [[220, 0], [420, 0], [420, 340], [220, 340]]
+  vertical_flip: True
+  horizontal_flip: True
+  debug: True
+lane_detector:
+  model_path: "pretrained/best.pth"
+  debug: True
+lane_fitting:
+  contours:
+    min_area: 800
+    max_area: 2000
+  lane:
+    max_width: 100
+  window:
+    height: 40
+    width: 60
+    margin_x: 10
+    min_pixels: 50
+    max_pixels: 4500
+  histogram:
+    height_ratio: 0.7
+    seed: 64
+  debug: True
+lane_tracking:
+  debug: True
