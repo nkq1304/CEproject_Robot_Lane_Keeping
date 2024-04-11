@@ -2,6 +2,7 @@ import cv2 as cv
 import numpy as np
 
 from exceptions.lane import LaneException
+from utils.lane_line import LaneLine
 
 
 class FrameDebugger:
@@ -9,13 +10,31 @@ class FrameDebugger:
     font_scale = 0.5
     thickness = 1
     font = cv.FONT_HERSHEY_SIMPLEX
+    left_lane: LaneLine = None
+    right_lane: LaneLine = None
 
     @staticmethod
-    def update(frame) -> None:
+    def update(frame, left_lane: LaneLine, right_lane: LaneLine) -> None:
         FrameDebugger.frame = frame
+        FrameDebugger.left_lane = left_lane
+        FrameDebugger.right_lane = right_lane
 
     @staticmethod
     def show() -> None:
+        left_lane = FrameDebugger.left_lane
+        right_lane = FrameDebugger.right_lane
+
+        left_curvature = left_lane.get_curvature(180)
+        right_curvature = right_lane.get_curvature(180)
+
+        curvature_radius = (left_curvature + right_curvature) / 2
+        distance = left_lane.dist + right_lane.dist
+
+        FrameDebugger.draw_text(
+            f"Curvature Radius : {curvature_radius:.2f}", (10, 20), (0, 255, 0)
+        )
+        FrameDebugger.draw_text(f"Distance : {distance:.2f}", (10, 40), (0, 255, 0))
+
         cv.imshow("frame_debugger", FrameDebugger.frame)
 
     @staticmethod
@@ -39,3 +58,4 @@ class FrameDebugger:
         font_scale = FrameDebugger.font_scale
 
         cv.putText(frame, text, pos, font, font_scale, color, thickness, cv.LINE_AA)
+        return frame

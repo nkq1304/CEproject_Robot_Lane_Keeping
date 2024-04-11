@@ -1,11 +1,11 @@
-video_path: "videos/example.mp4"
+video_path: "videos/turtlebot.mp4"
 image_transform:
-  vertical_flip: True
-  horizontal_flip: True
+  vertical_flip: False
+  horizontal_flip: False
   debug: True
 perspective_transform:
-  src: [[260, 120], [380, 120], [640, 365], [0, 365]]
-  dst: [[220, 0], [420, 0], [420, 340], [220, 340]]
+  src: [[200, 240], [440, 240], [640, 365], [0, 365]]
+  dst: [[220, 0], [420, 0], [420, 360], [220, 360]]
   vertical_flip: True
   horizontal_flip: True
   debug: True

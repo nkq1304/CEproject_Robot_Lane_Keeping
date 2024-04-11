@@ -21,7 +21,7 @@ lane_fitting:
   window:
     height: 40
     width: 60
-    margin_x: 10
+    margin_x: 20
     min_pixels: 50
     max_pixels: 4500
   histogram:

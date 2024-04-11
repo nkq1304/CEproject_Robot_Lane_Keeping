@@ -11,6 +11,7 @@ from modules.backend.image_publisher import ImagePublisher
 
 from utils.visualize import draw_lane, draw_intersection
 
+
 class LaneTracking:
     def __init__(self, config: dict) -> None:
         self.debug = config["debug"]
@@ -21,10 +22,10 @@ class LaneTracking:
         left_lane, right_lane = self.process_lanes(lanes)
 
         self.kalman_filter(left_lane, right_lane)
-        self.visualize(frame, self.prev_left_lane, self.prev_right_lane)
+        mask_frame = self.visualize(frame, self.prev_left_lane, self.prev_right_lane)
         self.frame_debugger()
 
-        return self.prev_left_lane, self.prev_right_lane
+        return self.prev_left_lane, self.prev_right_lane, mask_frame
 
     def process_lanes(self, lanes: List[LaneLine]) -> Tuple[LaneLine, LaneLine]:
         if len(lanes) == 0:
@@ -49,6 +50,7 @@ class LaneTracking:
             return
 
         viz_frame = img.copy()
+        mask_frame = np.zeros_like(viz_frame)
 
         if left_lane is None or right_lane is None:
             return
@@ -57,12 +59,17 @@ class LaneTracking:
 
         draw_lane(viz_frame, left_lane)
         draw_lane(viz_frame, right_lane, (255, 0, 0))
+
+        draw_lane(mask_frame, left_lane)
+        draw_lane(mask_frame, right_lane, (255, 0, 0))
         # draw_intersection(viz_frame, intersection)
 
         if ImagePublisher.lane_tracking is not None:
             ImagePublisher.publish_lane_tracking(viz_frame)
         else:
             cv2.imshow("lane_tracking", viz_frame)
+
+        return mask_frame
 
     def kalman_filter(self, left_lane: LaneLine, right_lane: LaneLine) -> None:
         if left_lane is not None:

@@ -1,6 +1,7 @@
 import numpy as np
 from typing import List, Tuple
 
+
 class LaneLine:
     def __init__(self, lefty, leftx, start=0, end=0, dist=0) -> None:
         poly_fit = np.polyfit(lefty, leftx, 2)
@@ -42,8 +43,11 @@ class LaneLine:
 
         return list(zip(x, y))
 
-    def get_curvature(self, y) -> float:
-        return ((1 + (2 * self.a * y + self.b) ** 2) ** 1.5) / np.absolute(2 * self.a)
+    def get_curvature(self, y=None) -> float:
+        if y is None:
+            y = (self.start - self.end) / 2
+
+        return (1 + (2 * self.a * y + self.b) ** 2) ** 1.5 / np.abs(2 * self.a)
 
     def get_intersection(self, other, frame) -> Tuple[int, int]:
         a = self.a - other.a
