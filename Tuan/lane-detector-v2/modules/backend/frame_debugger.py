@@ -7,9 +7,9 @@ from utils.lane_line import LaneLine
 
 class FrameDebugger:
     frame = None
-    font_scale = 0.5
+    font_scale = 0.8
     thickness = 1
-    font = cv.FONT_HERSHEY_SIMPLEX
+    font = cv.FONT_HERSHEY_DUPLEX
     left_lane: LaneLine = None
     right_lane: LaneLine = None
 
@@ -31,9 +31,9 @@ class FrameDebugger:
         distance = left_lane.dist + right_lane.dist
 
         FrameDebugger.draw_text(
-            f"Curvature Radius : {curvature_radius:.2f}", (10, 20), (0, 255, 0)
+            f"Curvature Radius : {curvature_radius:.2f}", (10, 30), (255, 0, 0)
         )
-        FrameDebugger.draw_text(f"Distance : {distance:.2f}", (10, 40), (0, 255, 0))
+        FrameDebugger.draw_text(f"Distance : {distance:.2f}", (10, 60), (255, 0, 0))
 
         cv.imshow("frame_debugger", FrameDebugger.frame)
 

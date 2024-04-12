@@ -4,7 +4,7 @@ image_transform:
   horizontal_flip: False
   debug: True
 perspective_transform:
-  src: [[200, 240], [440, 240], [640, 365], [0, 365]]
+  src: [[200, 200], [400, 200], [640, 360], [0, 360]]
   dst: [[220, 0], [420, 0], [420, 360], [220, 360]]
   vertical_flip: True
   horizontal_flip: True
@@ -22,7 +22,7 @@ lane_fitting:
     height: 40
     width: 60
     margin_x: 10
-    min_pixels: 50
+    min_pixels: 5
     max_pixels: 4500
   histogram:
     height_ratio: 0.7

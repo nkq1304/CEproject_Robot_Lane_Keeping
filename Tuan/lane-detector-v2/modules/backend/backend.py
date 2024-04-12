@@ -50,5 +50,3 @@ class Backend:
 
         FrameDebugger.update(viz_frame, left_lane, right_lane)
         FrameDebugger.show()
-
-        cv2.imshow("viz_frame", viz_frame)
