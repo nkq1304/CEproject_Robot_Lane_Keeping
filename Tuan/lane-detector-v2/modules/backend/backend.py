@@ -46,7 +46,8 @@ class Backend:
 
         mask_frame = self.perspective_transform.get_car_view(warp_mask_frame)
         viz_frame = frame.copy()
-        viz_frame[mask_frame != 0] = mask_frame[mask_frame != 0]
+        black_pixels_mask = cv2.inRange(mask_frame, (0, 0, 0), (0, 0, 0))
+        viz_frame[black_pixels_mask != 255] = mask_frame[black_pixels_mask != 255]
 
         FrameDebugger.update(viz_frame, left_lane, right_lane)
         FrameDebugger.show()

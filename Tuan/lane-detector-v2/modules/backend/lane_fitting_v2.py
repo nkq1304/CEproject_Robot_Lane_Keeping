@@ -96,7 +96,7 @@ class LaneFittingV2:
                 )
                 histogram[left_boundary:right_boundary] = 0
 
-            if len(drawn_windows) == 0:
+            if len(drawn_windows) < 4:
                 continue
 
             lane = self.lane_extrapolation(pixel_index_on_lane, pixel_index_on_windows)
@@ -145,9 +145,13 @@ class LaneFittingV2:
 
             if len(self.nonzero_pixel_x[pixel_index_on_window_i]) > 0:
                 drawn_windows.append(window)
+
+            if len(pixel_index_on_window_i) >= self.window_min_pixels:
                 window_x_mid = np.int32(
                     np.mean(self.nonzero_pixel_x[pixel_index_on_window_i])
                 )
+            elif len(drawn_windows) >= 2:
+                window_x_mid += drawn_windows[-1].x - drawn_windows[-2].x
 
         return (
             pixel_index_on_lane,
@@ -280,9 +284,9 @@ class LaneFittingV2:
     def visualize(self, lanes):
         if not self.debug:
             return
-        
+
         self.draw_lanes(lanes)
-    
+
         if ImagePublisher.lane_fitting is not None:
             ImagePublisher.publish_lane_fitting(self.viz_frame)
         else:

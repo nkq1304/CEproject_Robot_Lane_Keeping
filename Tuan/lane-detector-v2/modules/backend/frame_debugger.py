@@ -27,7 +27,7 @@ class FrameDebugger:
         left_curvature = left_lane.get_curvature(180)
         right_curvature = right_lane.get_curvature(180)
 
-        curvature_radius = (left_curvature + right_curvature) / 2
+        curvature_radius = (left_curvature + right_curvature) / 2000
         distance = left_lane.dist + right_lane.dist
 
         FrameDebugger.draw_text(
