@@ -5,7 +5,7 @@ image_transform:
   debug: True
 perspective_transform:
   src: [[190, 200], [410, 200], [640, 360], [0, 360]]
-  dst: [[240, 0], [400, 0], [400, 360], [240, 360]]
+  dst: [[240, 100], [400, 100], [400, 360], [240, 360]]
   vertical_flip: True
   horizontal_flip: True
   debug: True
@@ -20,13 +20,14 @@ lane_fitting:
     max_width: 100
   window:
     height: 30
-    width: 70
-    margin_x: 30
-    min_pixels: 50
+    width: 80
+    margin_x: 0
+    min_pixels: 1
     max_pixels: 4500
   histogram:
     height_ratio: 0.7
     seed: 64
   debug: True
 lane_tracking:
+  center_dist: 75
   debug: True

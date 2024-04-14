@@ -29,4 +29,5 @@ lane_fitting:
     seed: 64
   debug: True
 lane_tracking:
+  center_dist: 100
   debug: True

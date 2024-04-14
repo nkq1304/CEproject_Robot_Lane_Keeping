@@ -10,30 +10,26 @@ class FrameDebugger:
     font_scale = 0.8
     thickness = 1
     font = cv.FONT_HERSHEY_DUPLEX
-    left_lane: LaneLine = None
-    right_lane: LaneLine = None
+    center_lane: LaneLine = None
 
     @staticmethod
-    def update(frame, left_lane: LaneLine, right_lane: LaneLine) -> None:
+    def update(frame, center_lane: LaneLine) -> None:
         FrameDebugger.frame = frame
-        FrameDebugger.left_lane = left_lane
-        FrameDebugger.right_lane = right_lane
+        FrameDebugger.center_lane = center_lane
 
     @staticmethod
     def show() -> None:
-        left_lane = FrameDebugger.left_lane
-        right_lane = FrameDebugger.right_lane
+        center_lane = FrameDebugger.center_lane
 
-        left_curvature = left_lane.get_curvature(180)
-        right_curvature = right_lane.get_curvature(180)
-
-        curvature_radius = (left_curvature + right_curvature) / 2000
-        distance = left_lane.dist + right_lane.dist
-
-        FrameDebugger.draw_text(
-            f"Curvature Radius : {curvature_radius:.2f}", (10, 30), (255, 0, 0)
-        )
-        FrameDebugger.draw_text(f"Distance : {distance:.2f}", (10, 60), (255, 0, 0))
+        if center_lane is not None:
+            FrameDebugger.draw_text(
+                f"Curvature Radius : {center_lane.get_curvature():.2f}",
+                (10, 30),
+                (255, 0, 0),
+            )
+            FrameDebugger.draw_text(
+                f"Distance : {center_lane.dist:.2f}", (10, 60), (255, 0, 0)
+            )
 
         cv.imshow("frame_debugger", FrameDebugger.frame)
 

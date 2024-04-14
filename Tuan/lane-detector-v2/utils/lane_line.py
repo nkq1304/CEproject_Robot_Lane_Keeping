@@ -26,6 +26,11 @@ class LaneLine:
         lane.c = c
         return lane
 
+    @classmethod
+    def from_points(cls, points: List[Tuple[int, int]]) -> "LaneLine":
+        leftx, lefty = zip(*points)
+        return cls(lefty, leftx)
+
     def get_x(self, y: int) -> int:
         return self.a * y**2 + self.b * y + self.c
 
@@ -72,3 +77,6 @@ class LaneLine:
             return None
 
         return int(self.get_x(y)), int(y)
+
+    def get_length(self) -> float:
+        return self.start - self.end
