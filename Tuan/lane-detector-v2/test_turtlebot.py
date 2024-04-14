@@ -8,12 +8,14 @@ from utils.config import Config
 
 from modules.backend.backend import Backend
 from modules.backend.image_publisher import ImagePublisher
+from modules.controller.turtlebot_controller import TurtlebotController
 
 
 def image_callback(data):
     frame = bridge.imgmsg_to_cv2(data, "bgr8")
 
-    backend.process_frame(frame)
+    deviation = backend.process_frame(frame)
+    turtlebot_controller.cbFollowLane(deviation)
 
 
 def on_shutdown():
@@ -23,7 +25,9 @@ def on_shutdown():
 
 if __name__ == "__main__":
     cfg = Config("configs/turtlebot.yaml")
+
     backend = Backend(cfg)
+    turtlebot_controller = TurtlebotController(cfg.turtlebot_controller)
 
     bridge = CvBridge()
 

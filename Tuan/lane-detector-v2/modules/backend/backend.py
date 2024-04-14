@@ -23,7 +23,7 @@ class Backend:
         self.prev_frame_time = 0
         self.new_frame_time = 0
 
-    def process_frame(self, frame) -> None:
+    def process_frame(self, frame) -> float:
         frame = cv2.resize(frame, (640, 360))
         # Image transformation
         frame = self.image_transform.transform(frame)
@@ -48,3 +48,5 @@ class Backend:
 
         FrameDebugger.update(viz_frame, center_lane)
         FrameDebugger.show()
+
+        return center_lane.dist

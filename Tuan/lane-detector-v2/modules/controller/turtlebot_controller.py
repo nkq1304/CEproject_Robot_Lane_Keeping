@@ -6,34 +6,33 @@ from std_msgs.msg import Float64
 from geometry_msgs.msg import Twist
 
 
-class ControlLane:
-    def __init__(self):
+class TurtlebotController:
+    def __init__(self, cfg: dict):
         self.pub_cmd_vel = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
 
-        self.lastError = 0
-        self.MAX_VEL = 0.1
+        self.max_vel = cfg["max_vel"]
+        self.Kp = cfg["Kp"]
+        self.Kd = cfg["Kd"]
 
+        self.lastError = 0
         self.errors = []
 
         rospy.on_shutdown(self.fnShutDown)
 
     def cbGetMaxVel(self, max_vel_msg):
-        self.MAX_VEL = max_vel_msg.data
+        self.max_vel = max_vel_msg.data
 
     def cbFollowLane(self, deviation):
         error = deviation
 
         self.errors.append(error)
 
-        Kp = 0.0025
-        Kd = 0.007
-
-        angular_z = Kp * error + Kd * (error - self.lastError)
+        angular_z = self.Kp * error + self.Kd * (error - self.lastError)
         self.lastError = error
 
         twist = Twist()
         # twist.linear.x = 0.1
-        twist.linear.x = min(self.MAX_VEL * ((1 - abs(error) / 500) ** 2.2), 0.05)
+        twist.linear.x = min(self.max_vel * ((1 - abs(error) / 500) ** 2.2), 0.05)
         twist.linear.y = 0
         twist.linear.z = 0
         twist.angular.x = 0

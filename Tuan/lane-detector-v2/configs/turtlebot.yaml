@@ -31,3 +31,7 @@ lane_fitting:
 lane_tracking:
   center_dist: 75
   debug: True
+turtlebot_controller:
+  max_vel: 0.3
+  Kp: 0.0025
+  Kd: 0.007
