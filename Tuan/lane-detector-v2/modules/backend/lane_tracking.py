@@ -86,34 +86,32 @@ class LaneTracking:
 
     def kalman_filter(self, left_lane: LaneLine, right_lane: LaneLine) -> None:
         if left_lane is not None:
-            if (
-                self.prev_left_lane is not None
-                and abs(left_lane.dist - self.prev_left_lane.dist) < 30
-            ):
-                self.prev_left_lane = left_lane
-                self.left_lane_realiability -= 5
+            if self.prev_left_lane is not None:
+                if abs(left_lane.dist - self.prev_left_lane.dist) < 30:
+                    self.prev_left_lane = left_lane
+                else:
+                    self.left_lane_realiability -= 5
             elif self.prev_left_lane is None:
                 self.prev_left_lane = left_lane
 
         if right_lane is not None:
-            if (
-                self.prev_right_lane is not None
-                and abs(right_lane.dist - self.prev_right_lane.dist) < 30
-            ):
-                self.prev_right_lane = right_lane
-                self.right_lane_realiability -= 5
+            if self.prev_right_lane is not None:
+                if abs(right_lane.dist - self.prev_right_lane.dist) < 30:
+                    self.prev_right_lane = right_lane
+                else:
+                    self.right_lane_realiability -= 5
             elif self.prev_right_lane is None:
                 self.prev_right_lane = right_lane
 
     def update_lane_reliability(self) -> None:
         if self.prev_left_lane is not None:
             self.left_lane_realiability += (
-                5 if self.prev_left_lane.get_length() > 200 else -5
+                5 if self.prev_left_lane.get_length() > 180 else -5
             )
 
         if self.prev_right_lane is not None:
             self.right_lane_realiability += (
-                5 if self.prev_right_lane.get_length() > 200 else -5
+                5 if self.prev_right_lane.get_length() > 180 else -5
             )
 
         self.left_lane_realiability = np.clip(self.left_lane_realiability, 0, 100)

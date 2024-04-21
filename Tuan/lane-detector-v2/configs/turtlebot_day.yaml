@@ -1,0 +1,37 @@
+video_path: "videos/turtlebot_day.mp4"
+image_transform:
+  vertical_flip: False
+  horizontal_flip: False
+  debug: True
+perspective_transform:
+  src: [[180, 260], [460, 260], [640, 360], [0, 360]]
+  dst: [[180, 0], [460, 0], [460, 360], [180, 360]]
+  vertical_flip: True
+  horizontal_flip: True
+  debug: True
+lane_detector:
+  model_path: "pretrained/best.pth"
+  debug: True
+lane_fitting:
+  contours:
+    min_area: 800
+    max_area: 2000
+  lane:
+    max_width: 100
+  window:
+    height: 30
+    width: 80
+    margin_x: 0
+    min_pixels: 1
+    max_pixels: 4500
+  histogram:
+    height_ratio: 0.7
+    seed: 64
+  debug: True
+lane_tracking:
+  center_dist: 75
+  debug: True
+turtlebot_controller:
+  max_vel: 0.3
+  Kp: 0.0025
+  Kd: 0.007
