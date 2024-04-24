@@ -136,9 +136,7 @@ cython_debug/
 # Config
 *.yaml
 
-!Tuan/lane-detector-v2/videos/example.mp4
-!Tuan/lane-detector-v2/videos/turtlebot.mp4
-!Tuan/lane-detector-v2/videos/turtlebot_day.mp4
+!Tuan/lane-detector-v2/videos/*
 
 !Tuan/lane-detector-v2/configs/example.yaml
 !Tuan/lane-detector-v2/configs/turtlebot.yaml

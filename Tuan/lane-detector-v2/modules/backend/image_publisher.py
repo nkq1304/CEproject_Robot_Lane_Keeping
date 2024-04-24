@@ -1,9 +1,9 @@
-import rospy
-import cv2
+# import rospy
+# import cv2
 
-from rospy import Publisher
-from sensor_msgs.msg import Image
-from cv_bridge import CvBridge
+# from rospy import Publisher
+# from sensor_msgs.msg import Image
+# from cv_bridge import CvBridge
 
 
 class ImagePublisher:
@@ -12,25 +12,26 @@ class ImagePublisher:
     lane_fitting = None
     lane_detector = None
     lane_tracking = None
-    bridge = CvBridge()
+    # bridge = CvBridge()
 
     @staticmethod
     def __init__():
-        ImagePublisher.image_transform = rospy.Publisher(
-            "/image_transform", Image, queue_size=10
-        )
-        ImagePublisher.perspective_transform = rospy.Publisher(
-            "/perspective_transform", Image, queue_size=10
-        )
-        ImagePublisher.lane_fitting = rospy.Publisher(
-            "/lane_fitting", Image, queue_size=10
-        )
-        ImagePublisher.lane_detector = rospy.Publisher(
-            "/lane_detector", Image, queue_size=10
-        )
-        ImagePublisher.lane_tracking = rospy.Publisher(
-            "/lane_tracking", Image, queue_size=10
-        )
+        # ImagePublisher.image_transform = rospy.Publisher(
+        #     "/image_transform", Image, queue_size=10
+        # )
+        # ImagePublisher.perspective_transform = rospy.Publisher(
+        #     "/perspective_transform", Image, queue_size=10
+        # )
+        # ImagePublisher.lane_fitting = rospy.Publisher(
+        #     "/lane_fitting", Image, queue_size=10
+        # )
+        # ImagePublisher.lane_detector = rospy.Publisher(
+        #     "/lane_detector", Image, queue_size=10
+        # )
+        # ImagePublisher.lane_tracking = rospy.Publisher(
+        #     "/lane_tracking", Image, queue_size=10
+        # )
+        pass
 
     @staticmethod
     def publish_image_transform(image):
