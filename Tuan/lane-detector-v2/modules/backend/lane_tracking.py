@@ -22,8 +22,8 @@ class LaneTracking:
         self.prev_left_lane = None
         self.prev_right_lane = None
 
-        self.left_lane_realiability = 100
-        self.right_lane_realiability = 100
+        self.left_lane_reliability = 100
+        self.right_lane_reliability = 100
 
     def track(self, frame, lanes: List[LaneLine]) -> Tuple[LaneLine, LaneLine]:
         left_lane, right_lane = self.process_lanes(lanes)
@@ -90,7 +90,7 @@ class LaneTracking:
                 if abs(left_lane.dist - self.prev_left_lane.dist) < 30:
                     self.prev_left_lane = left_lane
                 else:
-                    self.left_lane_realiability -= 5
+                    self.left_lane_reliability -= 5
             elif self.prev_left_lane is None:
                 self.prev_left_lane = left_lane
 
@@ -99,23 +99,23 @@ class LaneTracking:
                 if abs(right_lane.dist - self.prev_right_lane.dist) < 30:
                     self.prev_right_lane = right_lane
                 else:
-                    self.right_lane_realiability -= 5
+                    self.right_lane_reliability -= 5
             elif self.prev_right_lane is None:
                 self.prev_right_lane = right_lane
 
     def update_lane_reliability(self) -> None:
         if self.prev_left_lane is not None:
-            self.left_lane_realiability += (
+            self.left_lane_reliability += (
                 5 if self.prev_left_lane.get_length() > 180 else -5
             )
 
         if self.prev_right_lane is not None:
-            self.right_lane_realiability += (
+            self.right_lane_reliability += (
                 5 if self.prev_right_lane.get_length() > 180 else -5
             )
 
-        self.left_lane_realiability = np.clip(self.left_lane_realiability, 0, 100)
-        self.right_lane_realiability = np.clip(self.right_lane_realiability, 0, 100)
+        self.left_lane_reliability = np.clip(self.left_lane_reliability, 0, 100)
+        self.right_lane_reliability = np.clip(self.right_lane_reliability, 0, 100)
 
     def process_center_lane(self, left_lane: LaneLine, right_lane: LaneLine) -> None:
         if left_lane is None and right_lane is None:
@@ -123,15 +123,15 @@ class LaneTracking:
             return
 
         if left_lane is not None and right_lane is not None:
-            if self.left_lane_realiability > 50 and self.right_lane_realiability > 50:
+            if self.left_lane_reliability > 50 and self.right_lane_reliability > 50:
                 self.process_center_lane_based_on_both_lanes(left_lane, right_lane)
-            elif self.left_lane_realiability > 50:
+            elif self.left_lane_reliability > 50:
                 self.process_center_lane_based_on_left_lane(left_lane)
-            elif self.right_lane_realiability > 50:
+            elif self.right_lane_reliability > 50:
                 self.process_center_lane_based_on_right_lane(right_lane)
-        elif left_lane is not None and self.left_lane_realiability > 50:
+        elif left_lane is not None and self.left_lane_reliability > 50:
             self.process_center_lane_based_on_left_lane(left_lane)
-        elif right_lane is not None and self.right_lane_realiability > 50:
+        elif right_lane is not None and self.right_lane_reliability > 50:
             self.process_center_lane_based_on_right_lane(right_lane)
 
     def process_center_lane_based_on_left_lane(self, left_lane: LaneLine) -> None:
