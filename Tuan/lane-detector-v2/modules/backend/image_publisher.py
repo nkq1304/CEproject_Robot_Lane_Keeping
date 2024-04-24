@@ -34,24 +34,24 @@ class ImagePublisher:
 
     @staticmethod
     def publish_image_transform(image):
-        ImagePublisher.pulish_image(image, ImagePublisher.image_transform)
+        ImagePublisher.publish_image(image, ImagePublisher.image_transform)
 
     @staticmethod
     def publish_perspective_transform(image):
-        ImagePublisher.pulish_image(image, ImagePublisher.perspective_transform)
+        ImagePublisher.publish_image(image, ImagePublisher.perspective_transform)
 
     @staticmethod
     def publish_lane_fitting(image):
-        ImagePublisher.pulish_image(image, ImagePublisher.lane_fitting)
+        ImagePublisher.publish_image(image, ImagePublisher.lane_fitting)
 
     @staticmethod
     def publish_lane_detector(image):
-        ImagePublisher.pulish_image(image, ImagePublisher.lane_detector)
+        ImagePublisher.publish_image(image, ImagePublisher.lane_detector)
 
     @staticmethod
     def publish_lane_tracking(image):
-        ImagePublisher.pulish_image(image, ImagePublisher.lane_tracking)
+        ImagePublisher.publish_image(image, ImagePublisher.lane_tracking)
 
     @staticmethod
-    def pulish_image(image, publisher: Publisher):
+    def publish_image(image, publisher: Publisher):
         publisher.publish(ImagePublisher.bridge.cv2_to_imgmsg(image, "bgr8"))
