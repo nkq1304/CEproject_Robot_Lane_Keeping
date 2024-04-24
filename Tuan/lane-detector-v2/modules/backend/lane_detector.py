@@ -9,9 +9,18 @@ from modules.backend.image_publisher import ImagePublisher
 class LaneDetector:
     def __init__(self, config: dict) -> None:
         self.debug = config["debug"]
+        self.video_path = config["video_path"]
         self.cuda = torch.cuda.is_available()
 
+        self.create_video_writer()
         self.load_model(config["model_path"])
+
+    def create_video_writer(self) -> None:
+        if self.video_path is None:
+            return
+
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+        self.video_writer = cv2.VideoWriter(self.video_path, fourcc, 60.0, (640, 360))
 
     def load_model(self, model_path: str):
         self.model = net.TwinLiteNet()
@@ -58,13 +67,14 @@ class LaneDetector:
         binary_img[LL > 100] = [255, 255, 255]
 
         self.visualize(img_copy, LL)
+        self.save_video(binary_img)
 
         return binary_img
-    
+
     def visualize(self, img, LL):
         if not self.debug:
             return
-        
+
         visualize_img = img.copy()
         visualize_img[LL > 100] = [0, 0, 255]
 
@@ -73,3 +83,7 @@ class LaneDetector:
             return
         else:
             cv2.imshow("lane_detector", visualize_img)
+
+    def save_video(self, frame):
+        if self.save_video:
+            self.video_writer.write(frame)

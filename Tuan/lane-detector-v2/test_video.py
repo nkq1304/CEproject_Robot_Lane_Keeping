@@ -4,7 +4,7 @@ from utils.config import Config
 from modules.backend.backend import Backend
 
 if __name__ == "__main__":
-    cfg = Config("configs/example.yaml")
+    cfg = Config("configs/turtlebot_day.yaml")
 
     backend = Backend(cfg)
 
