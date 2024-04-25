@@ -137,6 +137,7 @@ cython_debug/
 *.yaml
 
 !Tuan/lane-detector-v2/videos/*
+!Tuan/lane-detector-v2/videos/lane_detector/*
 
 !Tuan/lane-detector-v2/configs/example.yaml
 !Tuan/lane-detector-v2/configs/turtlebot.yaml
