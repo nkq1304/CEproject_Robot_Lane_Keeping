@@ -38,6 +38,8 @@ class Backend:
         # # Fit lanes
         lanes = self.lane_fitting.fit(warp_lane_frame)
 
+        print(len(lanes))
+
         # Track left and right lanes
         center_lane, warp_mask_frame = self.lane_tracking.track(warp_frame, lanes)
 

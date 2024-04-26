@@ -18,15 +18,13 @@ lane_fitting:
     max_area: 2000
   lane:
     max_width: 100
+    max_lanes: 3
   window:
     height: 40
     width: 60
     margin_x: 20
     min_pixels: 50
     max_pixels: 4500
-  histogram:
-    height_ratio: 0.7
-    seed: 64
   debug: True
 lane_tracking:
   center_dist: 100

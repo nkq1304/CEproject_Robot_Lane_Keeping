@@ -30,10 +30,8 @@ class LaneFittingV2:
         self.window_min_pixels = config["window"].get("min_pixels", 50)
         self.window_max_pixels = config["window"].get("max_pixels", 800)
 
-        self.histogram_seed = config["histogram"].get("seed", 64)
-        self.histogram_height_ratio = config["histogram"].get("height_ratio", 0.6)
-
         self.lane_max_width = config["lane"].get("max_width", 100)
+        self.max_lanes = config["lane"].get("max_lanes", 2)
 
     def window_start(self, frame) -> None:
         self.frame = frame
@@ -49,52 +47,35 @@ class LaneFittingV2:
         self.nonzero_pixel_x = np.array(np.nonzero(self.binary_frame)[1])
         self.nonzero_pixel_y = np.array(np.nonzero(self.binary_frame)[0])
 
-        self.histogram = self.histogram_seeded(self.binary_frame)
-
     def fit(self, frame) -> List[LaneLine]:
         self.window_start(frame)
-
-        histogram = self.histogram
 
         pixel_index_on_any_lane = np.array([], dtype=np.int64)
 
         lanes: list[LaneLine] = []
 
-        for i in range(0, 15):
-            max_x = self.corrector_window_start(np.argmax(histogram))
+        first_init = True
 
-            if max_x == 0:
-                break
+        for i in range(0, 15):
+            if len(lanes) >= self.max_lanes:
+                lanes.sort(key=lambda lane: lane.dist)
+                self.visualize(lanes)
+                return lanes
+
+            start_x = self.get_start_x(pixel_index_on_any_lane, first_init)
+            first_init = False
+
+            if start_x is None:
+                lanes.sort(key=lambda lane: lane.dist)
+                self.visualize(lanes)
+                return lanes
 
             (
                 pixel_index_on_lane,
                 pixel_index_on_windows,
                 pixel_index_on_any_lane,
                 drawn_windows,
-            ) = self.sliding_window(max_x, pixel_index_on_any_lane)
-
-            x_found = self.nonzero_pixel_x[pixel_index_on_lane]
-
-            # Erase a bandwidth to do confuse not other sliding windows
-            if len(x_found) > 0:
-                left_boundary = np.int32(
-                    max([min([min(x_found), max_x - self.window_margin]), 0])
-                )
-                right_boundary = np.int32(
-                    min(
-                        [
-                            max([max(x_found), max_x + self.window_margin]),
-                            self.frame_width - 1,
-                        ]
-                    )
-                )
-                histogram[left_boundary:right_boundary] = 0
-            else:
-                left_boundary = np.int32(max([max_x - self.window_width, 0]))
-                right_boundary = np.int32(
-                    min([max_x + self.window_width, self.frame_width - 1])
-                )
-                histogram[left_boundary:right_boundary] = 0
+            ) = self.sliding_window(start_x, pixel_index_on_any_lane)
 
             if len(drawn_windows) < 4:
                 continue
@@ -115,6 +96,35 @@ class LaneFittingV2:
         self.visualize(lanes)
 
         return lanes
+
+    def get_start_x(self, mask_found_index_on_any_lane, first_init: False) -> int:
+        window_height = self.window_height
+        window_width = self.frame_width // 2 if first_init else self.frame_width
+        window_x = (
+            self.frame_width_center + window_width // 2
+            if first_init
+            else self.frame_width_center
+        )
+
+        init_window = Window(
+            window_width,
+            window_height,
+            (window_x, self.frame_height - window_height / 2),
+        )
+
+        for i in range(self.frame_height // window_height):
+            init_window.set_y(int(self.frame_height - (i + 0.5) * window_height))
+
+            pixel_index_on_window = self.get_pixel_index_on_window(
+                init_window, mask_found_index_on_any_lane
+            )
+
+            print(i)
+
+            if len(pixel_index_on_window) > 0:
+                return np.int32(np.mean(self.nonzero_pixel_x[pixel_index_on_window]))
+
+        return 0
 
     def sliding_window(self, window_x_mid, mask_found_index_on_any_lane):
         pixel_index_on_lane = np.array([], dtype=np.int64)
@@ -144,6 +154,9 @@ class LaneFittingV2:
             pixel_index_on_windows.append(pixel_index_on_window_i)
 
             if len(self.nonzero_pixel_x[pixel_index_on_window_i]) > 0:
+                window.set_x(
+                    np.int32(np.mean(self.nonzero_pixel_x[pixel_index_on_window_i]))
+                )
                 drawn_windows.append(window)
 
             if len(pixel_index_on_window_i) >= self.window_min_pixels:
@@ -227,59 +240,6 @@ class LaneFittingV2:
 
             for window in lane.drawn_windows:
                 draw_window(self.viz_frame, window, color)
-
-    def histogram_seeded(self, binary_frame) -> np.ndarray:
-        histogram_slice_num = self.frame_width // self.histogram_seed
-        histogram_height = np.int32(self.frame_height * self.histogram_height_ratio)
-
-        histogram = np.sum(binary_frame[self.frame_height - histogram_height :], axis=0)
-
-        histogram_seeded = np.zeros_like(histogram)
-
-        last_seed = self.frame_width % (self.histogram_seed * histogram_slice_num)
-
-        for i in range(histogram_slice_num):
-            left = i * self.histogram_seed
-            right = (i + 1) * self.histogram_seed
-
-            histogram_seeded[left + self.histogram_seed // 2] = np.sum(
-                histogram[left:right]
-            )
-
-        if last_seed > 0:
-            histogram_seeded[
-                self.histogram_seed * histogram_slice_num + last_seed // 2
-            ] = np.sum(
-                histogram[
-                    self.histogram_seed * histogram_slice_num : self.frame_width - 1
-                ]
-            )
-
-        return histogram_seeded
-
-    def corrector_window_start(self, max_x):
-        max_x_at_start = max_x
-
-        for i in range(self.num_of_windows):
-            mask_empty = np.array([], dtype=np.int64)
-
-            window = Window(
-                self.window_width,
-                self.window_height,
-                (max_x_at_start, self.frame_height - (i + 0.5) * self.window_height),
-            )
-
-            pixel_index_for_histogram_window = self.get_pixel_index_on_window(
-                window, mask_empty
-            )
-
-            if len(pixel_index_for_histogram_window) >= self.window_min_pixels:
-                max_x_at_start = np.int32(
-                    np.mean(self.nonzero_pixel_x[pixel_index_for_histogram_window])
-                )
-                break
-
-        return max_x_at_start
 
     def visualize(self, lanes):
         if not self.debug:
