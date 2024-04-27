@@ -2,8 +2,9 @@ import numpy as np
 import cv2 as cv
 
 from utils.lane_line import LaneLine
-
 from utils.visualize import draw_lane
+
+from typing import List
 
 DEBUG_LANE_COLORS = [
     (94, 22, 117),
@@ -21,7 +22,7 @@ class LaneFitting:
         self.debug = config["debug"]
         self.lanes = []
 
-    def fit(self, frame) -> list[LaneLine]:
+    def fit(self, frame) -> List[LaneLine]:
 
         contours = self.get_contour(frame)
         self.lanes = self.get_lane(frame, contours)
@@ -51,7 +52,7 @@ class LaneFitting:
 
         return x_overlap and y_overlap
 
-    def get_lane(self, frame, contours) -> list[LaneLine]:
+    def get_lane(self, frame, contours) -> List[LaneLine]:
         lanes = []
         lane_rects = []
 

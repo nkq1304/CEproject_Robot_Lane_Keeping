@@ -1,6 +1,5 @@
 import numpy as np
 import cv2
-import math
 
 from typing import List, Tuple
 
@@ -11,7 +10,7 @@ from exceptions.lane import LeftLineNotFound, RightLineNotFound, LaneNotFound
 from modules.backend.frame_debugger import FrameDebugger
 from modules.backend.image_publisher import ImagePublisher
 
-from utils.visualize import draw_lane, draw_intersection
+from utils.visualize import draw_lane
 
 
 class LaneTracking:
@@ -26,7 +25,7 @@ class LaneTracking:
         self.left_lane_reliability = 100
         self.right_lane_reliability = 100
 
-    def track(self, frame, lanes: List[LaneLine]) -> Tuple[LaneLine, LaneLine]:
+    def track(self, frame, lanes: List[LaneLine]) -> float:
         left_lane, right_lane = self.process_lanes(lanes)
 
         self.kalman_filter(left_lane, right_lane)
@@ -39,7 +38,10 @@ class LaneTracking:
 
         self.frame_debugger(mask_frame)
 
-        return self.center_lane
+        if self.center_lane is not None:
+            return self.center_lane.dist
+
+        return 0
 
     def process_lanes(self, lanes: List[LaneLine]) -> Tuple[LaneLine, LaneLine]:
         if len(lanes) == 0:
@@ -175,10 +177,10 @@ class LaneTracking:
             black_pixels_mask != 255
         ]
 
-        if self.center_lane is not None:
-            FrameDebugger.draw_tracking_info(
-                self.center_lane.get_curvature(), self.center_lane.dist
-            )
+        dist = 0 if self.center_lane is None else self.center_lane.dist
+        curvature = 0 if self.center_lane is None else self.center_lane.get_curvature()
+
+        FrameDebugger.draw_tracking_info(curvature, dist)
 
         if not left_lane_found and not right_lane_found:
             FrameDebugger.draw_error(LaneNotFound())

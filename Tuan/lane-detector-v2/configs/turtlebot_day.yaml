@@ -19,7 +19,7 @@ lane_fitting:
     max_area: 2000
   lane:
     max_width: 100
-    max_lanes: 3
+    max_lanes: 2
   window:
     height: 30
     width: 80

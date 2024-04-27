@@ -1,5 +1,4 @@
 import cv2 as cv
-import numpy as np
 
 from exceptions.lane import LaneException
 from utils.lane_line import LaneLine
