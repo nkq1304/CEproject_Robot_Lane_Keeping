@@ -16,7 +16,7 @@ class LaneDetector:
         self.load_model(config["model_path"])
 
     def create_video_writer(self) -> None:
-        if self.video_path is None:
+        if self.video_path == "":
             return
 
         fourcc = cv2.VideoWriter_fourcc(*"mp4v")
@@ -85,5 +85,7 @@ class LaneDetector:
             cv2.imshow("lane_detector", visualize_img)
 
     def save_video(self, frame):
-        if self.save_video:
-            self.video_writer.write(frame)
+        if self.video_path == "":
+            return
+
+        self.video_writer.write(frame)
