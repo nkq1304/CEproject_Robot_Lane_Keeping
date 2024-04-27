@@ -1,17 +1,35 @@
-## Requirement
+# Requirement
 - Download PyTorch from [here](https://pytorch.org/get-started/locally/) (GPU is recommended for better performance).
-- If your GPU not support CUDA, you can install PyTorch without CUDA by using the following command:
-```setup
-pip install torch torchvision torchaudio
-```
-- See `requirements.txt` for additional dependencies and version requirements.
+- If your GPU not support CUDA, you can choose these options:
+    - (Not recommend) Install PyTorch without CUDA:
+    ```
+    pip install torch torchvision torchaudio
+    ```
+    - Demo without LaneDetector:
+    ```
+    python test_lane_video.py
+    ```
 
-```setup
+- See `requirements.txt` for additional dependencies and version requirements:
+
+```
 pip install -r requirements.txt
 ```
+# Usage
+## Demo with LaneDetector
 
-## Demo
+```
+python test_video.py
+```
 
-```setup
-python main.py
+## Demo without LaneDetector
+
+```
+python test_lane_video.py
+```
+
+## For Turtlebot:
+- Make sure to uncomment `image_publisher.py` before running the following command:
+```
+python test_turtlebot.py
 ```
