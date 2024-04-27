@@ -133,7 +133,7 @@ class LaneTracking:
         shifted_lane = LaneLine.from_points(shifted_points)
         shifted_lane.start = lane.start
         shifted_lane.end = lane.end
-        shifted_lane.dist = lane.dist + shift
+        shifted_lane.dist = lane.dist - shift
 
         return shifted_lane
 
