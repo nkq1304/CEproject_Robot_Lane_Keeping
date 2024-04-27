@@ -16,7 +16,6 @@ from utils.visualize import draw_lane
 class LaneTracking:
     def __init__(self, config: dict) -> None:
         self.center_dist = config["center_dist"]
-        self.debug = config["debug"]
 
         self.center_lane = None
         self.prev_left_lane = None
@@ -142,9 +141,6 @@ class LaneTracking:
     def visualize(
         self, img, left_lane: LaneLine, right_lane: LaneLine, center_lane: LaneLine
     ) -> None:
-        if not self.debug:
-            return
-
         viz_frame = img.copy()
         mask_frame = np.zeros_like(viz_frame)
 

@@ -14,7 +14,7 @@ from modules.controller.turtlebot_controller import TurtlebotController
 def image_callback(data):
     frame = bridge.imgmsg_to_cv2(data, "bgr8")
 
-    deviation = backend.process_frame(frame)
+    deviation = backend.update(frame)
     turtlebot_controller.cbFollowLane(deviation)
 
 

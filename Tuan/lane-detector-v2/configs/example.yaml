@@ -11,6 +11,7 @@ perspective_transform:
   debug: True
 lane_detector:
   model_path: "pretrained/best.pth"
+  video_path: ""
   debug: True
 lane_fitting:
   contours:
@@ -18,7 +19,7 @@ lane_fitting:
     max_area: 2000
   lane:
     max_width: 100
-    max_lanes: 3
+    max_lanes: 4
   window:
     height: 40
     width: 60
@@ -27,5 +28,4 @@ lane_fitting:
     max_pixels: 4500
   debug: True
 lane_tracking:
-  center_dist: 100
-  debug: True
+  center_dist: 70

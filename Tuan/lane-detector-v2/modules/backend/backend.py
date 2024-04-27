@@ -23,11 +23,30 @@ class Backend:
         self.prev_frame_time = 0
         self.new_frame_time = 0
 
-    def process_frame(self, frame) -> float:
+    def update(self, frame) -> float:
         frame = cv2.resize(frame, (640, 360))
-
         FrameDebugger.update(frame)
-        # Image transformation
+
+        self.start_fps()
+        dist = self.process_frame(frame)
+        fps = self.end_fps()
+
+        FrameDebugger.draw_text(f"{fps:.0f}", (610, 20), (255, 255, 255))
+        FrameDebugger.show()
+
+        return dist
+
+    def start_fps(self):
+        self.new_frame_time = time.time()
+
+    def end_fps(self):
+        fps = 1 / (self.new_frame_time - self.prev_frame_time)
+        self.prev_frame_time = self.new_frame_time
+
+        return fps
+
+    def process_frame(self, frame) -> float:
+        # # Image transformation
         frame = self.image_transform.transform(frame)
 
         # # Detect lanes with TwinLiteNet
@@ -40,9 +59,7 @@ class Backend:
         # # Fit lanes
         lanes = self.lane_fitting.fit(warp_lane_frame)
 
-        # Track left and right lanes
+        # # Track left and right lanes
         dist = self.lane_tracking.track(warp_frame, lanes)
-
-        FrameDebugger.show()
 
         return dist

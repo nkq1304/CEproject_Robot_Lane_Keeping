@@ -14,7 +14,7 @@ if __name__ == "__main__":
         ret, frame = cap.read()
 
         if ret:
-            backend.process_frame(frame)
+            backend.update(frame)
         else:
             break
 

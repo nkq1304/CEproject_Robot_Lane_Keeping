@@ -1,4 +1,5 @@
 import cv2
+import time
 
 from modules.backend.frame_debugger import FrameDebugger
 from modules.backend.image_transform import ImageTransform
@@ -8,10 +9,14 @@ from modules.backend.perspective_transform import PerspectiveTransform
 
 from utils.config import Config
 
+global prev_frame_time
+global new_frame_time
+
+prev_frame_time = 0
+new_frame_time = 0
+
 
 def process_frame(frame, lane_frame):
-    frame = cv2.resize(frame, (640, 360))
-    FrameDebugger.update(frame)
     # Image transformation
     frame = image_transform.transform(frame)
 
@@ -25,7 +30,36 @@ def process_frame(frame, lane_frame):
     # Track left and right lanes
     lane_tracking.track(warp_frame, lanes)
 
+
+def update(frame, lane_frame):
+    global prev_frame_time
+    global new_frame_time
+
+    frame = cv2.resize(frame, (640, 360))
+    FrameDebugger.update(frame)
+
+    start_fps()
+    dist = process_frame(frame, lane_frame)
+    fps = end_fps()
+
+    FrameDebugger.draw_text(f"{fps:.0f}", (610, 20), (255, 255, 255))
     FrameDebugger.show()
+
+    return dist
+
+
+def start_fps():
+    global new_frame_time
+    new_frame_time = time.time()
+
+
+def end_fps():
+    global prev_frame_time
+    global new_frame_time
+    fps = 1 / (new_frame_time - prev_frame_time)
+    prev_frame_time = new_frame_time
+
+    return fps
 
 
 if __name__ == "__main__":
@@ -44,7 +78,7 @@ if __name__ == "__main__":
         ret_lane, lane_frame = cap_lane.read()
 
         if ret_lane:
-            process_frame(frame, lane_frame)
+            update(frame, lane_frame)
         else:
             break
 
