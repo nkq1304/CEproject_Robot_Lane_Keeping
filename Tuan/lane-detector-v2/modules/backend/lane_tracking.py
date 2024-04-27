@@ -39,7 +39,7 @@ class LaneTracking:
 
         self.frame_debugger(mask_frame)
 
-        return self.center_lane, mask_frame
+        return self.center_lane
 
     def process_lanes(self, lanes: List[LaneLine]) -> Tuple[LaneLine, LaneLine]:
         if len(lanes) == 0:

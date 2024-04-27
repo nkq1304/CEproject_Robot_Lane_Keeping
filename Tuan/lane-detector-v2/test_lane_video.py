@@ -11,6 +11,7 @@ from utils.config import Config
 
 def process_frame(frame, lane_frame):
     frame = cv2.resize(frame, (640, 360))
+    FrameDebugger.update(frame)
     # Image transformation
     frame = image_transform.transform(frame)
 
@@ -22,14 +23,8 @@ def process_frame(frame, lane_frame):
     lanes = lane_fitting.fit(warp_lane_frame)
 
     # Track left and right lanes
-    center_lane, warp_mask_frame = lane_tracking.track(warp_frame, lanes)
+    lane_tracking.track(warp_frame, lanes)
 
-    mask_frame = perspective_transform.get_car_view(warp_mask_frame)
-    viz_frame = frame.copy()
-    black_pixels_mask = cv2.inRange(mask_frame, (0, 0, 0), (0, 0, 0))
-    viz_frame[black_pixels_mask != 255] = mask_frame[black_pixels_mask != 255]
-
-    FrameDebugger.update(viz_frame, center_lane)
     FrameDebugger.show()
 
 

@@ -41,7 +41,7 @@ class Backend:
         lanes = self.lane_fitting.fit(warp_lane_frame)
 
         # Track left and right lanes
-        center_lane, warp_mask_frame = self.lane_tracking.track(warp_frame, lanes)
+        center_lane = self.lane_tracking.track(warp_frame, lanes)
 
         FrameDebugger.show()
 
