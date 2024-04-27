@@ -28,7 +28,7 @@ lane_fitting:
     max_pixels: 4500
   debug: True
 lane_tracking:
-  center_dist: 75
+  center_dist: 80
   debug: True
 turtlebot_controller:
   max_vel: 0.3
