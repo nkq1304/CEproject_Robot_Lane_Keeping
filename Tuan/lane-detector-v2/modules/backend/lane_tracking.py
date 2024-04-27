@@ -176,13 +176,8 @@ class LaneTracking:
         ]
 
         if self.center_lane is not None:
-            FrameDebugger.draw_text(
-                f"Curvature Radius : {self.center_lane.get_curvature():.2f}",
-                (10, 30),
-                (255, 0, 0),
-            )
-            FrameDebugger.draw_text(
-                f"Distance : {self.center_lane.dist:.2f}", (10, 60), (255, 0, 0)
+            FrameDebugger.draw_tracking_info(
+                self.center_lane.get_curvature(), self.center_lane.dist
             )
 
         if not left_lane_found and not right_lane_found:

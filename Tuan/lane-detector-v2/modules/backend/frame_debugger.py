@@ -7,7 +7,7 @@ from utils.lane_line import LaneLine
 
 class FrameDebugger:
     frame = None
-    font_scale = 0.8
+    font_scale = 0.6
     thickness = 1
     font = cv.FONT_HERSHEY_DUPLEX
     center_lane: LaneLine = None
@@ -42,3 +42,21 @@ class FrameDebugger:
 
         cv.putText(frame, text, pos, font, font_scale, color, thickness, cv.LINE_AA)
         return frame
+
+    @staticmethod
+    def draw_rectangle(rect: tuple, color: tuple, opacity: float) -> None:
+        frame = FrameDebugger.frame
+        overlay = frame.copy()
+        cv.rectangle(overlay, (rect[0], rect[1]), (rect[2], rect[3]), color, -1)
+        cv.addWeighted(overlay, opacity, frame, 1 - opacity, 0, frame)
+        return frame
+
+    @staticmethod
+    def draw_tracking_info(curvature: float, dist: float) -> None:
+        FrameDebugger.draw_rectangle((0, 0, 640, 60), (0, 0, 0), 0.3)
+        FrameDebugger.draw_text(
+            f"Curvature Radius : {curvature:.2f}",
+            (10, 20),
+            (255, 255, 255),
+        )
+        FrameDebugger.draw_text(f"Distance : {dist:.2f}", (10, 45), (255, 255, 255))
