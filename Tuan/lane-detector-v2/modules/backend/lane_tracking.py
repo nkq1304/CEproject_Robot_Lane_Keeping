@@ -4,6 +4,7 @@ import math
 
 from typing import List, Tuple
 
+from modules.backend.perspective_transform import PerspectiveTransform
 from utils.lane_line import LaneLine
 from exceptions.lane import LeftLineNotFound, RightLineNotFound, LaneNotFound
 
@@ -36,6 +37,8 @@ class LaneTracking:
             frame, self.prev_left_lane, self.prev_right_lane, self.center_lane
         )
 
+        self.frame_debugger(mask_frame)
+
         return self.center_lane, mask_frame
 
     def process_lanes(self, lanes: List[LaneLine]) -> Tuple[LaneLine, LaneLine]:
@@ -55,6 +58,84 @@ class LaneTracking:
             return lanes[i - 1], lane
 
         return None, None
+
+    def kalman_filter(self, left_lane: LaneLine, right_lane: LaneLine) -> None:
+
+        if (
+            self.prev_left_lane is not None
+            and left_lane is not None
+            and abs(left_lane.dist - self.prev_left_lane.dist) > 30
+        ):
+            self.prev_left_lane = None
+        else:
+            self.prev_left_lane = left_lane
+
+        if (
+            self.prev_right_lane is not None
+            and right_lane is not None
+            and abs(right_lane.dist - self.prev_right_lane.dist) > 30
+        ):
+            self.prev_right_lane = None
+        else:
+            self.prev_right_lane = right_lane
+
+    def update_lane_reliability(self) -> None:
+        if self.prev_left_lane is not None:
+            self.left_lane_reliability += (
+                5 if self.prev_left_lane.get_length() > 180 else -5
+            )
+
+        if self.prev_right_lane is not None:
+            self.right_lane_reliability += (
+                5 if self.prev_right_lane.get_length() > 180 else -5
+            )
+
+        self.left_lane_reliability = np.clip(self.left_lane_reliability, 0, 100)
+        self.right_lane_reliability = np.clip(self.right_lane_reliability, 0, 100)
+
+    def process_center_lane(self, left_lane: LaneLine, right_lane: LaneLine) -> None:
+        if left_lane is None and right_lane is None:
+            self.center_lane = None
+            return
+
+        if left_lane is not None and right_lane is not None:
+            if self.left_lane_reliability > 50 and self.right_lane_reliability > 50:
+                self.process_center_lane_based_on_both_lanes(left_lane, right_lane)
+            elif self.left_lane_reliability > 50:
+                self.center_lane = self.shift_lane(left_lane, -self.center_dist)
+            elif self.right_lane_reliability > 50:
+                self.center_lane = self.shift_lane(right_lane, self.center_dist)
+        elif left_lane is not None and self.left_lane_reliability > 50:
+            self.center_lane = self.shift_lane(left_lane, -self.center_dist)
+        elif right_lane is not None and self.right_lane_reliability > 50:
+            self.center_lane = self.shift_lane(right_lane, self.center_dist)
+
+    def process_center_lane_based_on_both_lanes(
+        self, left_lane: LaneLine, right_lane: LaneLine
+    ) -> None:
+        self.center_lane = LaneLine.from_coefficients(
+            (left_lane.a + right_lane.a) / 2,
+            (left_lane.b + right_lane.b) / 2,
+            (left_lane.c + right_lane.c) / 2,
+        )
+
+        self.center_lane.start = (left_lane.start + right_lane.start) // 2
+        self.center_lane.end = (left_lane.end + right_lane.end) // 2
+        self.center_lane.dist = (left_lane.dist + right_lane.dist) / 2
+
+    def shift_lane(self, lane: LaneLine, shift: int) -> LaneLine:
+        if lane is None:
+            return None
+
+        points = lane.get_points()
+        shifted_points = [(x + shift, y) for x, y in points]
+
+        shifted_lane = LaneLine.from_points(shifted_points)
+        shifted_lane.start = lane.start
+        shifted_lane.end = lane.end
+        shifted_lane.dist = lane.dist + shift
+
+        return shifted_lane
 
     def visualize(
         self, img, left_lane: LaneLine, right_lane: LaneLine, center_lane: LaneLine
@@ -84,92 +165,25 @@ class LaneTracking:
 
         return mask_frame
 
-    def kalman_filter(self, left_lane: LaneLine, right_lane: LaneLine) -> None:
-        if left_lane is not None:
-            if self.prev_left_lane is not None:
-                if abs(left_lane.dist - self.prev_left_lane.dist) < 30:
-                    self.prev_left_lane = left_lane
-                else:
-                    self.left_lane_reliability -= 5
-            elif self.prev_left_lane is None:
-                self.prev_left_lane = left_lane
-
-        if right_lane is not None:
-            if self.prev_right_lane is not None:
-                if abs(right_lane.dist - self.prev_right_lane.dist) < 30:
-                    self.prev_right_lane = right_lane
-                else:
-                    self.right_lane_reliability -= 5
-            elif self.prev_right_lane is None:
-                self.prev_right_lane = right_lane
-
-    def update_lane_reliability(self) -> None:
-        if self.prev_left_lane is not None:
-            self.left_lane_reliability += (
-                5 if self.prev_left_lane.get_length() > 180 else -5
-            )
-
-        if self.prev_right_lane is not None:
-            self.right_lane_reliability += (
-                5 if self.prev_right_lane.get_length() > 180 else -5
-            )
-
-        self.left_lane_reliability = np.clip(self.left_lane_reliability, 0, 100)
-        self.right_lane_reliability = np.clip(self.right_lane_reliability, 0, 100)
-
-    def process_center_lane(self, left_lane: LaneLine, right_lane: LaneLine) -> None:
-        if left_lane is None and right_lane is None:
-            self.center_lane = None
-            return
-
-        if left_lane is not None and right_lane is not None:
-            if self.left_lane_reliability > 50 and self.right_lane_reliability > 50:
-                self.process_center_lane_based_on_both_lanes(left_lane, right_lane)
-            elif self.left_lane_reliability > 50:
-                self.process_center_lane_based_on_left_lane(left_lane)
-            elif self.right_lane_reliability > 50:
-                self.process_center_lane_based_on_right_lane(right_lane)
-        elif left_lane is not None and self.left_lane_reliability > 50:
-            self.process_center_lane_based_on_left_lane(left_lane)
-        elif right_lane is not None and self.right_lane_reliability > 50:
-            self.process_center_lane_based_on_right_lane(right_lane)
-
-    def process_center_lane_based_on_left_lane(self, left_lane: LaneLine) -> None:
-        left_points = left_lane.get_points()
-        # Shift the left points x coordinate to the right by 100 pixels
-        center_points = [(x + self.center_dist, y) for x, y in left_points]
-
-        self.center_lane = LaneLine.from_points(center_points)
-        self.center_lane.start = left_lane.start
-        self.center_lane.end = left_lane.end
-        self.center_lane.dist = left_lane.dist + self.center_dist
-
-    def process_center_lane_based_on_right_lane(self, right_lane: LaneLine) -> None:
-        right_points = right_lane.get_points()
-        # Shift the right points x coordinate to the left by 100 pixels
-        center_points = [(x - self.center_dist, y) for x, y in right_points]
-
-        self.center_lane = LaneLine.from_points(center_points)
-        self.center_lane.start = right_lane.start
-        self.center_lane.end = right_lane.end
-        self.center_lane.dist = right_lane.dist - self.center_dist
-
-    def process_center_lane_based_on_both_lanes(
-        self, left_lane: LaneLine, right_lane: LaneLine
-    ) -> None:
-        self.center_lane = LaneLine.from_coefficients(
-            (left_lane.a + right_lane.a) / 2,
-            (left_lane.b + right_lane.b) / 2,
-            (left_lane.c + right_lane.c) / 2,
-        )
-
-        self.center_lane.start = (left_lane.start + right_lane.start) // 2
-        self.center_lane.end = (left_lane.end + right_lane.end) // 2
-        self.center_lane.dist = (left_lane.dist + right_lane.dist) / 2
-
-    def frame_debugger(self) -> None:
+    def frame_debugger(self, warp_mask_frame) -> None:
         left_lane_found = self.prev_left_lane is not None
         right_lane_found = self.prev_right_lane is not None
+
+        mask_frame = PerspectiveTransform.get_car_view(warp_mask_frame)
+        black_pixels_mask = cv2.inRange(mask_frame, (0, 0, 0), (0, 0, 0))
+        FrameDebugger.frame[black_pixels_mask != 255] = mask_frame[
+            black_pixels_mask != 255
+        ]
+
+        if self.center_lane is not None:
+            FrameDebugger.draw_text(
+                f"Curvature Radius : {self.center_lane.get_curvature():.2f}",
+                (10, 30),
+                (255, 0, 0),
+            )
+            FrameDebugger.draw_text(
+                f"Distance : {self.center_lane.dist:.2f}", (10, 60), (255, 0, 0)
+            )
 
         if not left_lane_found and not right_lane_found:
             FrameDebugger.draw_error(LaneNotFound())

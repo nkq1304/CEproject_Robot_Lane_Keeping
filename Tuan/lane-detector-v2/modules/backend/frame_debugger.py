@@ -13,24 +13,11 @@ class FrameDebugger:
     center_lane: LaneLine = None
 
     @staticmethod
-    def update(frame, center_lane: LaneLine) -> None:
+    def update(frame) -> None:
         FrameDebugger.frame = frame
-        FrameDebugger.center_lane = center_lane
 
     @staticmethod
     def show() -> None:
-        center_lane = FrameDebugger.center_lane
-
-        if center_lane is not None:
-            FrameDebugger.draw_text(
-                f"Curvature Radius : {center_lane.get_curvature():.2f}",
-                (10, 30),
-                (255, 0, 0),
-            )
-            FrameDebugger.draw_text(
-                f"Distance : {center_lane.dist:.2f}", (10, 60), (255, 0, 0)
-            )
-
         cv.imshow("frame_debugger", FrameDebugger.frame)
 
     @staticmethod
@@ -40,7 +27,7 @@ class FrameDebugger:
 
     @staticmethod
     def draw_lane_error(exception: LaneException) -> None:
-        pos = (10, 20)
+        pos = (10, 340)
         color = (0, 0, 255)
         text = "LaneError: " + exception.message
 

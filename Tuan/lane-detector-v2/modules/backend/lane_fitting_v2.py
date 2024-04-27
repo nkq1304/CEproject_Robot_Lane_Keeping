@@ -56,12 +56,7 @@ class LaneFittingV2:
 
         first_init = True
 
-        for i in range(0, 15):
-            if len(lanes) >= self.max_lanes:
-                lanes.sort(key=lambda lane: lane.dist)
-                self.visualize(lanes)
-                return lanes
-
+        for i in range(0, self.max_lanes):
             start_x = self.get_start_x(pixel_index_on_any_lane, first_init)
             first_init = False
 
@@ -77,7 +72,7 @@ class LaneFittingV2:
                 drawn_windows,
             ) = self.sliding_window(start_x, pixel_index_on_any_lane)
 
-            if len(drawn_windows) < 4:
+            if len(drawn_windows) < self.num_of_windows * 2 // 3:
                 continue
 
             lane = self.lane_extrapolation(pixel_index_on_lane, pixel_index_on_windows)
@@ -86,9 +81,7 @@ class LaneFittingV2:
                 continue
 
             lanes.append(lane)
-            lane.dist = np.mean(
-                [window.x - self.frame_width_center for window in drawn_windows]
-            )
+            lane.dist = self.frame_width_center - lane.get_x(self.frame_height)
             lane.drawn_windows = drawn_windows
 
         lanes.sort(key=lambda lane: lane.dist)
@@ -118,8 +111,6 @@ class LaneFittingV2:
             pixel_index_on_window = self.get_pixel_index_on_window(
                 init_window, mask_found_index_on_any_lane
             )
-
-            print(i)
 
             if len(pixel_index_on_window) > 0:
                 return np.int32(np.mean(self.nonzero_pixel_x[pixel_index_on_window]))
@@ -173,15 +164,6 @@ class LaneFittingV2:
             drawn_windows,
         )
 
-    def get_next_window(self, window: Window, pixel_index_on_window) -> Window:
-        if len(pixel_index_on_window) == 0:
-            return window
-
-        x = np.mean(self.nonzero_pixel_x[pixel_index_on_window])
-        y = window.y - window.height
-
-        return Window(self.window_width, self.window_height, (x, y))
-
     def get_pixel_index_on_window(self, window: Window, mask_found_index_on_any_line):
         mask_vertical = (self.nonzero_pixel_y <= window.bottom) & (
             self.nonzero_pixel_y >= window.top
@@ -232,7 +214,10 @@ class LaneFittingV2:
 
         return binary_frame
 
-    def draw_lanes(self, lanes):
+    def visualize(self, lanes):
+        if not self.debug:
+            return
+
         for i, lane in enumerate(lanes):
             color = DEBUG_LANE_COLORS[i % len(DEBUG_LANE_COLORS)]
 
@@ -240,12 +225,6 @@ class LaneFittingV2:
 
             for window in lane.drawn_windows:
                 draw_window(self.viz_frame, window, color)
-
-    def visualize(self, lanes):
-        if not self.debug:
-            return
-
-        self.draw_lanes(lanes)
 
         if ImagePublisher.lane_fitting is not None:
             ImagePublisher.publish_lane_fitting(self.viz_frame)
