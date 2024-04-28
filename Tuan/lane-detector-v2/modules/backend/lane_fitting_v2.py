@@ -56,14 +56,12 @@ class LaneFittingV2:
 
         first_init = True
 
-        for i in range(0, self.max_lanes):
+        for i in range(0, self.max_lanes * 2):
             start_x = self.get_start_x(pixel_index_on_any_lane, first_init)
             first_init = False
 
             if start_x is None:
-                lanes.sort(key=lambda lane: lane.dist)
-                self.visualize(lanes)
-                return lanes
+                break
 
             (
                 pixel_index_on_lane,
@@ -83,6 +81,9 @@ class LaneFittingV2:
             lanes.append(lane)
             lane.dist = self.frame_width_center - lane.get_x(self.frame_height)
             lane.drawn_windows = drawn_windows
+
+            if len(lanes) >= self.max_lanes:
+                break
 
         lanes.sort(key=lambda lane: lane.dist)
 
