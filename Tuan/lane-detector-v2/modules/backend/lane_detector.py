@@ -19,7 +19,7 @@ class LaneDetector:
         if self.video_path == "":
             return
 
-        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+        fourcc = cv2.VideoWriter_fourcc(*"avc1")
         self.video_writer = cv2.VideoWriter(self.video_path, fourcc, 60.0, (640, 360))
 
     def load_model(self, model_path: str):
