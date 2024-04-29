@@ -12,6 +12,7 @@ perspective_transform:
 lane_detector:
   model_path: "pretrained/best.pth"
   video_path: "videos/lane_detector/turtlebot_day.mp4"
+  save_video: False
   debug: True
 lane_fitting:
   contours:

@@ -11,7 +11,8 @@ perspective_transform:
   debug: True
 lane_detector:
   model_path: "pretrained/best.pth"
-  video_path: ""
+  video_path: "videos/lane_detector/example.mp4"
+  save_video: False
   debug: True
 lane_fitting:
   contours:

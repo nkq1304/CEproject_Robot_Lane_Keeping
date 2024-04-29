@@ -10,13 +10,15 @@ class LaneDetector:
     def __init__(self, config: dict) -> None:
         self.debug = config["debug"]
         self.video_path = config["video_path"]
+        self.save_video = config["save_video"]
+
         self.cuda = torch.cuda.is_available()
 
         self.create_video_writer()
         self.load_model(config["model_path"])
 
     def create_video_writer(self) -> None:
-        if self.video_path == "":
+        if not self.save_video or self.video_path == "":
             return
 
         fourcc = cv2.VideoWriter_fourcc(*"avc1")
@@ -67,7 +69,7 @@ class LaneDetector:
         binary_img[LL > 100] = [255, 255, 255]
 
         self.visualize(img_copy, LL)
-        self.save_video(binary_img)
+        self.save_lane_video(binary_img)
 
         return binary_img
 
@@ -84,8 +86,8 @@ class LaneDetector:
         else:
             cv2.imshow("lane_detector", visualize_img)
 
-    def save_video(self, frame):
-        if self.video_path == "":
+    def save_lane_video(self, frame):
+        if not self.save_video or self.video_path == "":
             return
 
         self.video_writer.write(frame)
