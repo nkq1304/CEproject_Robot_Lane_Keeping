@@ -1,6 +1,8 @@
 import cv2
 import time
 
+from argparse import ArgumentParser
+
 from modules.backend.frame_debugger import FrameDebugger
 from modules.backend.image_transform import ImageTransform
 from modules.backend.lane_fitting_v2 import LaneFittingV2
@@ -62,8 +64,21 @@ def end_fps():
     return fps
 
 
+def arg_parse():
+    parser = ArgumentParser()
+    parser.add_argument(
+        "--config",
+        type=str,
+        default="configs/turtlebot_day.yaml",
+        help="Config file path",
+    )
+
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
-    cfg = Config("configs/turtlebot_day.yaml")
+    args = arg_parse()
+    cfg = Config(args.config)
 
     image_transform = ImageTransform(cfg.image_transform)
     perspective_transform = PerspectiveTransform(cfg.perspective_transform)
