@@ -28,7 +28,7 @@ python test_video.py
 python test_lane_video.py
 ```
 
-## For Turtlebot:
+## For Turtlebot
 - Make sure to uncomment `image_publisher.py` before running the following command:
 ```
 python test_turtlebot.py
