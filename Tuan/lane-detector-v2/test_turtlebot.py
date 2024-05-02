@@ -34,8 +34,6 @@ if __name__ == "__main__":
     rospy.init_node("get_image", anonymous=True)
     rospy.Subscriber("/camera/image", Image, image_callback)
 
-    publiser = rospy.Publisher("/lane_frame", Image, queue_size=10)
-
     ImagePublisher()
 
     rospy.on_shutdown(on_shutdown)
