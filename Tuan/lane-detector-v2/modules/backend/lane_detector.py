@@ -82,7 +82,6 @@ class LaneDetector:
 
         if ImagePublisher.lane_detector is not None:
             ImagePublisher.publish_lane_detector(visualize_img)
-            return
         else:
             cv2.imshow("lane_detector", visualize_img)
 

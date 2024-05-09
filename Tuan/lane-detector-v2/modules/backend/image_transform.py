@@ -28,6 +28,5 @@ class ImageTransform:
 
         if ImagePublisher.image_transform is not None:
             ImagePublisher.publish_image_transform(viz_img)
-            return
         else:
             cv.imshow("image_transform", viz_img)

@@ -3,6 +3,8 @@ import cv2 as cv
 from exceptions.lane import LaneException
 from utils.lane_line import LaneLine
 
+from modules.backend.image_publisher import ImagePublisher
+
 
 class FrameDebugger:
     frame = None
@@ -17,7 +19,10 @@ class FrameDebugger:
 
     @staticmethod
     def show() -> None:
-        cv.imshow("frame_debugger", FrameDebugger.frame)
+        if ImagePublisher.frame_debugger:
+            ImagePublisher.publish_frame_debugger(FrameDebugger.frame)
+        else:
+            cv.imshow("frame_debugger", FrameDebugger.frame)
 
     @staticmethod
     def draw_error(exception: Exception) -> None:

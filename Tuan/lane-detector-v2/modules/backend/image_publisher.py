@@ -12,6 +12,7 @@ class ImagePublisher:
     lane_fitting = None
     lane_detector = None
     lane_tracking = None
+    frame_debugger = None
     # bridge = CvBridge()
 
     # @staticmethod
@@ -31,7 +32,9 @@ class ImagePublisher:
     #     ImagePublisher.lane_tracking = rospy.Publisher(
     #         "/lane_tracking", Image, queue_size=10
     #     )
-    #     pass
+    #     ImagePublisher.frame_debugger = rospy.Publisher(
+    #         "/frame_debugger", Image, queue_size=10
+    #     )
 
     # @staticmethod
     # def publish_image_transform(image):
@@ -52,6 +55,10 @@ class ImagePublisher:
     # @staticmethod
     # def publish_lane_tracking(image):
     #     ImagePublisher.publish_image(image, ImagePublisher.lane_tracking)
+
+    # @staticmethod
+    # def publish_frame_debugger(image):
+    #     ImagePublisher.publish_image(image, ImagePublisher.frame_debugger)
 
     # @staticmethod
     # def publish_image(image, publisher: Publisher):
