@@ -4,7 +4,7 @@ image_transform:
   horizontal_flip: False
   debug: True
 perspective_transform:
-  src: [[200, 250], [450, 250], [640, 360], [0, 360]]
+  src: [[190, 250], [460, 250], [640, 360], [0, 360]]
   dst: [[180, 100], [460, 100], [460, 360], [180, 360]]
   vertical_flip: True
   horizontal_flip: True
@@ -29,7 +29,8 @@ lane_fitting:
     max_pixels: 4500
   debug: True
 lane_tracking:
-  center_dist: 75
+  center_dist: 85
+  max_dist_diff: 30
 turtlebot_controller:
   max_vel: 0.3
   Kp: 0.0025

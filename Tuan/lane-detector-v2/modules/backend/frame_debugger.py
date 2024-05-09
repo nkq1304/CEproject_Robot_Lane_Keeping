@@ -56,10 +56,10 @@ class FrameDebugger:
         return frame
 
     @staticmethod
-    def draw_tracking_info(curvature: float, dist: float) -> None:
+    def draw_tracking_info(angle: float, dist: float) -> None:
         FrameDebugger.draw_rectangle((0, 0, 640, 60), (0, 0, 0), 0.3)
         FrameDebugger.draw_text(
-            f"Curvature Radius : {curvature:.2f}",
+            f"Angle : {angle:.2f} deg",
             (10, 20),
             (255, 255, 255),
         )

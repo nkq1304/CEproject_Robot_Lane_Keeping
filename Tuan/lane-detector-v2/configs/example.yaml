@@ -30,3 +30,4 @@ lane_fitting:
   debug: True
 lane_tracking:
   center_dist: 70
+  max_dist_diff: 30

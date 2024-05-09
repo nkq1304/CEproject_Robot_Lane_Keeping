@@ -79,7 +79,7 @@ class LaneFittingV2:
                 continue
 
             lanes.append(lane)
-            lane.dist = self.frame_width_center - lane.get_x(self.frame_height)
+            lane.dist = lane.get_x(self.frame_height) - self.frame_width_center
             lane.drawn_windows = drawn_windows
 
             if len(lanes) >= self.max_lanes:

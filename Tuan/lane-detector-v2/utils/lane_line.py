@@ -48,11 +48,11 @@ class LaneLine:
 
         return list(zip(x, y))
 
-    def get_curvature(self, y=None) -> float:
+    def get_angle(self, y=None) -> float:
         if y is None:
             y = (self.start - self.end) / 2
 
-        return (1 + (2 * self.a * y + self.b) ** 2) ** 1.5 / np.abs(2 * self.a)
+        return -np.arctan(2 * self.a * y + self.b) * 180 / np.pi
 
     def get_intersection(self, other, frame) -> Tuple[int, int]:
         a = self.a - other.a
