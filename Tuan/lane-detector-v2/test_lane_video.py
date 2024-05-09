@@ -69,7 +69,7 @@ def arg_parse():
     parser.add_argument(
         "--config",
         type=str,
-        default="configs/turtlebot_day.yaml",
+        default="configs/turtlebot.yaml",
         help="Config file path",
     )
 

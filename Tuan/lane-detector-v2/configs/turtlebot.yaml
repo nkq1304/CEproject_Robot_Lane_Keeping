@@ -4,8 +4,8 @@ image_transform:
   horizontal_flip: False
   debug: True
 perspective_transform:
-  src: [[190, 200], [410, 200], [640, 360], [0, 360]]
-  dst: [[240, 100], [400, 100], [400, 360], [240, 360]]
+  src: [[200, 250], [450, 250], [640, 360], [0, 360]]
+  dst: [[180, 100], [460, 100], [460, 360], [180, 360]]
   vertical_flip: True
   horizontal_flip: True
   debug: True

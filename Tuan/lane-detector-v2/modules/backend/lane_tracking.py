@@ -67,7 +67,7 @@ class LaneTracking:
             and left_lane is not None
             and abs(left_lane.dist - self.prev_left_lane.dist) > 30
         ):
-            self.prev_left_lane = None
+            self.prev_left_lane = self.shift_lane(right_lane, self.center_dist * 2)
         else:
             self.prev_left_lane = left_lane
 
@@ -76,7 +76,7 @@ class LaneTracking:
             and right_lane is not None
             and abs(right_lane.dist - self.prev_right_lane.dist) > 30
         ):
-            self.prev_right_lane = None
+            self.prev_right_lane = self.shift_lane(left_lane, -self.center_dist * 2)
         else:
             self.prev_right_lane = right_lane
 
