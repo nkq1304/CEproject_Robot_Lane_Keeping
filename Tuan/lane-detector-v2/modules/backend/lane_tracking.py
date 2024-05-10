@@ -34,7 +34,7 @@ class LaneTracking:
 
         return self.center_lane.dist if self.center_lane is not None else 0
 
-    def tracking_lanes_v1(self, lanes: list[LaneLine]) -> None:
+    def tracking_lanes_v1(self, lanes: List[LaneLine]) -> None:
         # Get left and right lane
         left_lane, right_lane = self.process_lanes(lanes)
 
@@ -97,7 +97,7 @@ class LaneTracking:
         else:
             self.right_lane = right_lane
 
-    def tracking_lanes_v2(self, lanes: list[LaneLine]) -> None:
+    def tracking_lanes_v2(self, lanes: List[LaneLine]) -> None:
         if self.left_lane is None and self.right_lane is None:
             # If both lanes are missing
             self.left_lane, self.right_lane = self.process_lanes(lanes)
