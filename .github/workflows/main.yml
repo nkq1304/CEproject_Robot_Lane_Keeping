@@ -15,7 +15,7 @@ jobs:
       - name: Compile LaTeX document
         uses: xu-cheng/latex-action@v3
         with:
-          root_file: Dissertation.tex
+          root_file: latex/main.tex
 
       - name: Create Release
         id: create_release
