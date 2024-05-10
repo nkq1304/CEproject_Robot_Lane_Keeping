@@ -23,9 +23,7 @@ class LaneTracking:
         self.right_lane = None
 
     def track(self, frame, lanes: List[LaneLine]) -> float:
-        left_lane, right_lane = self.process_lanes(lanes)
-
-        self.tracking_lanes(left_lane, right_lane)
+        self.tracking_lanes_v2(lanes)
         self.process_center_lane(self.left_lane, self.right_lane)
 
         mask_frame = self.visualize(
@@ -34,10 +32,85 @@ class LaneTracking:
 
         self.frame_debugger(mask_frame)
 
-        if self.center_lane is not None:
-            return self.center_lane.dist
+        return self.center_lane.dist if self.center_lane is not None else 0
 
-        return 0
+    def tracking_lanes_v1(self, lanes: list[LaneLine]) -> None:
+        # Get left and right lane
+        left_lane, right_lane = self.process_lanes(lanes)
+
+        left_lane_dist_diff = (
+            0
+            if left_lane is None or self.left_lane is None
+            else abs(left_lane.dist - self.left_lane.dist)
+        )
+
+        right_lane_dist_diff = (
+            0
+            if right_lane is None or self.right_lane is None
+            else abs(right_lane.dist - self.right_lane.dist)
+        )
+
+        # Check if both lanes are too far from previous lanes
+        if (
+            left_lane_dist_diff > self.max_dist_diff
+            and right_lane_dist_diff > self.max_dist_diff
+        ):
+            if (
+                left_lane
+                and self.right_lane
+                and abs(left_lane.dist - self.right_lane.dist) < self.max_dist_diff
+            ):
+                # If previous right lane is closer to left lane, current right lane is left lane
+                right_lane = left_lane
+                self.right_lane = left_lane
+                left_lane = None
+            elif (
+                right_lane
+                and self.left_lane
+                and abs(right_lane.dist - self.left_lane.dist) < self.max_dist_diff
+            ):
+                # If previous left lane is closer to right lane, current left lane is right lane
+                left_lane = right_lane
+                self.left_lane = right_lane
+                right_lane = None
+
+        # Shift lanes if one lane is missing
+        if (
+            self.left_lane is not None
+            and left_lane is not None
+            and abs(left_lane.dist - self.left_lane.dist) > self.max_dist_diff
+        ):
+            self.left_lane = self.shift_lane(right_lane, -self.center_dist * 2)
+        elif left_lane is None:
+            self.left_lane = self.shift_lane(right_lane, -self.center_dist * 2)
+        else:
+            self.left_lane = left_lane
+
+        if (
+            self.right_lane is not None
+            and right_lane is not None
+            and abs(right_lane.dist - self.right_lane.dist) > self.max_dist_diff
+        ):
+            self.right_lane = self.shift_lane(left_lane, self.center_dist * 2)
+        elif right_lane is None:
+            self.right_lane = self.shift_lane(left_lane, self.center_dist * 2)
+        else:
+            self.right_lane = right_lane
+
+    def tracking_lanes_v2(self, lanes: list[LaneLine]) -> None:
+        if self.left_lane is None and self.right_lane is None:
+            # If both lanes are missing
+            self.left_lane, self.right_lane = self.process_lanes(lanes)
+        else:
+            # Find nearest lanes
+            self.left_lane = self.find_nearest_lane(self.left_lane, lanes)
+            self.right_lane = self.find_nearest_lane(self.right_lane, lanes)
+
+            # Shift lanes if one lane is missing
+            if self.left_lane is None:
+                self.left_lane = self.shift_lane(self.right_lane, -self.center_dist * 2)
+            elif self.right_lane is None:
+                self.right_lane = self.shift_lane(self.left_lane, self.center_dist * 2)
 
     def process_lanes(self, lanes: List[LaneLine]) -> Tuple[LaneLine, LaneLine]:
         if len(lanes) == 0:
@@ -64,62 +137,6 @@ class LaneTracking:
             return lanes[i - 1], lane
 
         return None, None
-
-    def tracking_lanes(self, left_lane: LaneLine, right_lane: LaneLine) -> None:
-        left_lane_dist_diff = (
-            0
-            if left_lane is None or self.left_lane is None
-            else abs(left_lane.dist - self.left_lane.dist)
-        )
-
-        right_lane_dist_diff = (
-            0
-            if right_lane is None or self.right_lane is None
-            else abs(right_lane.dist - self.right_lane.dist)
-        )
-
-        if (
-            left_lane_dist_diff > self.max_dist_diff
-            and right_lane_dist_diff > self.max_dist_diff
-        ):
-            if (
-                left_lane
-                and self.right_lane
-                and abs(left_lane.dist - self.right_lane.dist) < self.max_dist_diff
-            ):
-                right_lane = left_lane
-                self.right_lane = left_lane
-                left_lane = None
-            elif (
-                right_lane
-                and self.left_lane
-                and abs(right_lane.dist - self.left_lane.dist) < self.max_dist_diff
-            ):
-                left_lane = right_lane
-                self.left_lane = right_lane
-                right_lane = None
-
-        if (
-            self.left_lane is not None
-            and left_lane is not None
-            and abs(left_lane.dist - self.left_lane.dist) > self.max_dist_diff
-        ):
-            self.left_lane = self.shift_lane(right_lane, -self.center_dist * 2)
-        elif left_lane is None:
-            self.left_lane = self.shift_lane(right_lane, -self.center_dist * 2)
-        else:
-            self.left_lane = left_lane
-
-        if (
-            self.right_lane is not None
-            and right_lane is not None
-            and abs(right_lane.dist - self.right_lane.dist) > self.max_dist_diff
-        ):
-            self.right_lane = self.shift_lane(left_lane, self.center_dist * 2)
-        elif right_lane is None:
-            self.right_lane = self.shift_lane(left_lane, self.center_dist * 2)
-        else:
-            self.right_lane = right_lane
 
     def process_center_lane(self, left_lane: LaneLine, right_lane: LaneLine) -> None:
         if left_lane is None and right_lane is None:
@@ -159,6 +176,25 @@ class LaneTracking:
         shifted_lane.dist = lane.dist + shift
 
         return shifted_lane
+
+    def find_nearest_lane(
+        self, target_lane: LaneLine, lanes: List[LaneLine]
+    ) -> LaneLine:
+        if target_lane is None:
+            return target_lane
+
+        nearest_lane = lanes[0]
+
+        for lane in lanes:
+            if abs(target_lane.dist - lane.dist) < abs(
+                target_lane.dist - nearest_lane.dist
+            ):
+                nearest_lane = lane
+
+        if abs(nearest_lane.dist - target_lane.dist) > self.max_dist_diff:
+            return None
+
+        return nearest_lane
 
     def visualize(
         self, img, left_lane: LaneLine, right_lane: LaneLine, center_lane: LaneLine
