@@ -1,0 +1,250 @@
+\documentclass[12pt, a4paper]{report}
+\usepackage[table]{xcolor} % for color the table
+\usepackage{a4wide,amssymb,epsfig,latexsym,multicol,array,hhline,fancyhdr}
+\usepackage{vntex}
+\usepackage{amsmath}
+\usepackage{lastpage}
+\usepackage[lined,boxed,commentsnumbered]{algorithm2e}
+\usepackage{enumerate}
+\usepackage{color}
+\usepackage{listing}
+\usepackage[table]{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{graphicx}
+\usepackage{float}
+% Standard graphics package
+\usepackage{array}
+\usepackage{tabularx, caption}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{rotating}
+\usepackage{graphics}
+\usepackage{geometry}
+\usepackage{subcaption}
+\usepackage{titlesec}
+\usepackage{afterpage}
+\usepackage{setspace}
+\usepackage{epsfig}
+\usepackage{tikz}
+\usepackage{booktabs}
+\usepackage{acronym}
+\usetikzlibrary{arrows,snakes,backgrounds}
+\usepackage{hyperref}
+\hypersetup{urlcolor=blue,linkcolor=black,citecolor=black,colorlinks=true}
+
+\providecommand{\phantomsection}{}
+\newenvironment{preface}[1]{
+  \vspace*{\stretch{1}}
+  {\noindent \bfseries \Huge #1}
+  \begin{center}
+    \thispagestyle{plain}
+    \phantomsection\addcontentsline{toc}{chapter}{#1}
+  \end{center}
+}{
+  \vspace*{\stretch{7}}
+}
+
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\lstdefinestyle{codingstyle}{
+  backgroundcolor=\color{backcolour},
+  commentstyle=\color{codegreen},
+  keywordstyle=\color{magenta},
+  numberstyle=\tiny\color{codegray},
+  stringstyle=\color{codepurple},
+  basicstyle=\ttfamily\normalsize,
+  breakatwhitespace=false,         
+  breaklines=true,                 
+  captionpos=b,                    
+  keepspaces=true,                 
+  numbers=left,                    
+  numbersep=5pt,                  
+  showspaces=false,                
+  showstringspaces=false,
+  showtabs=false,                  
+  tabsize=2,
+  language=C
+}
+\lstset{style=codingstyle}
+%\usepackage{pstcol} 								% PSTricks with the standard color package
+
+\newtheorem{theorem}{{\bf Định lý}}
+\newtheorem{property}{{\bf Tính chất}}
+\newtheorem{proposition}{{\bf Mệnh đề}}
+\newtheorem{corollary}[proposition]{{\bf Hệ quả}}
+\newtheorem{lemma}[proposition]{{\bf Bổ đề}}
+\def\thesislayout{	% A4: 210 × 297
+	\geometry{
+		a4paper,
+		total={160mm,240mm},  % fix over page
+		left=25mm,
+		top=30mm,
+	}
+}
+\thesislayout
+
+\AtBeginDocument{\renewcommand*\contentsname{Mục lục}}
+\AtBeginDocument{\renewcommand*\refname{Tài liệu tham khảo}}
+
+\setlength{\headheight}{20pt}
+\pagestyle{fancy}
+\fancyhead{} % clear all header fields
+\fancyhead[L]{
+ \begin{tabular}{rl}
+    \begin{picture}(20,10)(0,0)
+    \put(0,-9){\includegraphics[width=9.5mm, height=9.5mm]{hcmut.png}}
+    %\put(0,-8){\epsfig{width=10mm,figure=hcmut.eps}}
+   \end{picture}&
+	%\includegraphics[width=8mm, height=8mm]{hcmut.png} & %
+	\begin{tabular}{l}
+		\textcolor{black}{\textbf{\bf \ttfamily Trường Đại học Bách Khoa Thành phố Hồ Chí Minh}}\\
+		\textcolor{black}{\textbf{\bf \ttfamily Khoa Khoa học và Kỹ thuật Máy tính}}
+	\end{tabular} 	
+ \end{tabular}
+}
+\fancyhead[R]{
+	\begin{tabular}{l}
+		\tiny \bf \\
+		\tiny \bf 
+	\end{tabular}  }
+\fancyfoot{} % clear all footer fields
+\fancyfoot[L]{\scriptsize \ttfamily Đồ án môn học Kỹ thuật Máy tính 2023-2024}
+\fancyfoot[R]{\scriptsize \ttfamily Trang {\thepage}/\pageref{LastPage}}
+\renewcommand{\headrulewidth}{0.3pt}
+\renewcommand{\footrulewidth}{0.3pt}
+\renewcommand{\baselinestretch}{1.3}
+
+%%%
+\def\@makechapterhead#1{%
+  \vspace*{50\p@}%
+  {\parindent \z@ \raggedright \normalfont \scshape
+    \ifnum \c@secnumdepth >\m@ne
+      \if@mainmatter
+        \huge\bfseries \scshape \@chapapp\space \thechapter
+        \par\nobreak
+        \vskip 20\p@
+      \fi
+    \fi
+    \interlinepenalty\@M
+    \Huge \bfseries #1\par\nobreak
+    \vskip 40\p@
+  }}
+%%%
+
+\setcounter{secnumdepth}{4}
+\setcounter{tocdepth}{3}
+\makeatletter
+\newcounter {subsubsubsection}[subsubsection]
+\renewcommand\thesubsubsubsection{\thesubsubsection .\@alph\c@subsubsubsection}
+\newcommand\subsubsubsection{\@startsection{subsubsubsection}{4}{\z@}%
+                                     {-3.25ex\@plus -1ex \@minus -.2ex}%
+                                     {1.5ex \@plus .2ex}%
+                                     {\normalfont\normalsize\bfseries}}
+\newcommand*\l@subsubsubsection{\@dottedtocline{3}{10.0em}{4.1em}}
+\newcommand*{\subsubsubsectionmark}[1]{}
+\newcommand\tab[1][1cm]{\hspace*{#1}}
+
+\makeatother
+\begin{document}
+\begin{titlepage}
+\begin{tikzpicture}[remember picture,overlay,inner sep=0,outer sep=0]
+     \draw[black,line width=2pt] ([xshift=-1.25cm,yshift=-1.25cm]current page.north east) coordinate (A)--([xshift=1.25cm,yshift=-1.25cm]current page.north west) coordinate(B)--([xshift=1.25cm,yshift=1.25cm]current page.south west) coordinate (C)--([xshift=-1.25cm,yshift=1.25cm]current page.south east) coordinate(D)--cycle;
+\end{tikzpicture}
+\begin{center}
+\vspace*{-2cm}
+\fontsize{15pt}{15pt}\selectfont
+\textbf{ 
+ĐẠI HỌC QUỐC GIA THÀNH PHỐ HỒ CHÍ MINH\\  
+TRƯỜNG ĐẠI HỌC BÁCH KHOA\\
+KHOA KHOA HỌC VÀ KỸ THUẬT MÁY TÍNH}
+\end{center}
+
+\vspace{1cm}
+
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[width=4cm]{hcmut.png}
+\end{center}
+\end{figure}
+
+\vspace{0.5cm}
+
+
+\begin{center}
+\fontsize{15pt}{15pt}\selectfont
+\textbf{ 
+BÁO CÁO\\
+ĐỒ ÁN MÔN HỌC KỸ THUẬT MÁY TÍNH}
+
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{c}
+    \\
+    \hline  
+    \\
+    \multicolumn{1}{l}{{\fontsize{17pt}{17pt}\selectfont\bf ĐỀ TÀI:}}    \\  \\
+    {\fontsize{17pt}{17pt}\selectfont\bf HIỆN THỰC CHỨC NĂNG BÁM}\\
+    {\fontsize{17pt}{17pt}\selectfont\bf LÀN ĐƯỜNG CHO ROBOT TỰ HÀNH}     \\  \\
+    \hline
+    \end{tabular}
+\end{table}
+\end{center}
+\begin{center}
+    Ngành: \textbf{KỸ THUẬT MÁY TÍNH}
+\end{center}
+\vspace{1cm}
+
+\begin{table}[h]
+\begin{tabular}{rrl}
+\hspace{3.5cm} 
+&Hội đồng: &Hội đồng 1 Đồ án Môn học Kỹ thuật máy tính\\
+&Giảng viên hướng dẫn: & ThS. Trần Thanh Bình\\
+&Thư kí hội đồng: & ThS. Trần Thanh Bình\\ \\ \\
+&Sinh viên thực hiện 1:& Nguyễn Khôi Nguyên - 2013923 \\
+&Sinh viên thực hiện 2:& Nguyễn Kim Quỳnh - 2014334\\
+&Sinh viên thực hiện 3:& Nguyễn Phan Anh Tuấn - 2012348\\
+&Sinh viên thực hiện 4:& Nguyễn Quốc Mạnh - 1813043\\
+\end{tabular}
+\end{table}
+\vfill
+\begin{center}
+\large TP. Hồ Chí Minh, Tháng 12/2023
+\end{center}
+\end{titlepage}
+
+
+\thispagestyle{empty}
+
+\newpage
+\include{src/0_Abstract}
+
+\tableofcontents
+
+\phantomsection\addcontentsline{toc}{chapter}{\listtablename}
+\listoftables
+
+\phantomsection\addcontentsline{toc}{chapter}{\listfigurename}
+\listoffigures
+
+\newpage
+\include{src/Acronyms}
+\newpage
+\include{src/1_Introduction}
+\newpage
+\include{src/2_Theory}
+\newpage
+\include{src/3_Architecture}
+\newpage
+\include{src/4_Implement}
+\newpage
+\include{src/5_Result}
+\newpage
+\include{src/6_Difficult}
+\newpage
+\include{src/7_Development}
+\newpage
+\include{src/8_Conclusion}
+
+\bibliographystyle{ieeetr}
+\bibliography{refs.bib}
+\end{document}

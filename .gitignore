@@ -128,8 +128,6 @@ dmypy.json
 cython_debug/
 
 # Media
-*.png
-*.jpg
 *.mp4
 *.avi
 
