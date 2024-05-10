@@ -35,6 +35,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} 
-          asset_path: ./Dissertation.pdf
-          asset_name: Dissertation.pdf
+          asset_path: ./LaneKeepingAssist.pdf
+          asset_name: LaneKeepingAssist.pdf
           asset_content_type: application/pdf
