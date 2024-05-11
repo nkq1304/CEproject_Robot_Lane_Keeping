@@ -13,6 +13,8 @@ class Config:
         self.lane_fitting = self.config["lane_fitting"]
         self.lane_tracking = self.config["lane_tracking"]
 
+        self.turtlebot_controller = self.config["turtlebot_controller"]
+
         self.video_path = self.config["video_path"]
 
     def load_config(self, config_path: str) -> dict:
