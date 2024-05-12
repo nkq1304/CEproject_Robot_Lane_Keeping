@@ -2,6 +2,7 @@ import cv2
 import time
 
 from utils.config import Config
+from utils.lane_line import LaneLine
 
 from modules.backend.image_transform import ImageTransform
 from modules.backend.perspective_transform import PerspectiveTransform
@@ -23,18 +24,19 @@ class Backend:
         self.prev_frame_time = 0
         self.new_frame_time = 0
 
-    def update(self, frame) -> float:
+    def update(self, frame) -> LaneLine:
         frame = cv2.resize(frame, (640, 360))
         FrameDebugger.update(frame)
 
         self.start_fps()
-        dist = self.process_frame(frame)
+        center_lane = self.process_frame(frame)
+
         fps = self.end_fps()
 
         FrameDebugger.draw_text(f"{fps:.0f}", (610, 20), (255, 255, 255))
         FrameDebugger.show()
 
-        return dist
+        return center_lane
 
     def start_fps(self):
         self.new_frame_time = time.time()
@@ -45,7 +47,7 @@ class Backend:
 
         return fps
 
-    def process_frame(self, frame) -> float:
+    def process_frame(self, frame) -> LaneLine:
         # # Image transformation
         frame = self.image_transform.transform(frame)
 
@@ -60,6 +62,6 @@ class Backend:
         lanes = self.lane_fitting.fit(warp_lane_frame)
 
         # # Track left and right lanes
-        dist = self.lane_tracking.track(warp_frame, lanes)
+        center_lane = self.lane_tracking.track(warp_frame, lanes)
 
-        return dist
+        return center_lane

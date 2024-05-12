@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 from std_msgs.msg import Float64
 from geometry_msgs.msg import Twist
 
+from utils.lane_line import LaneLine
+
 
 class TurtlebotController:
     def __init__(self, cfg: dict):
@@ -17,13 +19,14 @@ class TurtlebotController:
         self.lastError = 0
         self.errors = []
 
-        rospy.on_shutdown(self.fnShutDown)
+        rospy.on_shutdown(self.stop)
 
-    def cbGetMaxVel(self, max_vel_msg):
-        self.max_vel = max_vel_msg.data
+    def follow_lane(self, lane: LaneLine):
+        if lane is None:
+            self.stop()
+            return
 
-    def cbFollowLane(self, deviation):
-        error = deviation
+        error = lane.dist
 
         self.errors.append(error)
 
@@ -32,7 +35,7 @@ class TurtlebotController:
 
         twist = Twist()
         # twist.linear.x = 0.1
-        twist.linear.x = min(self.max_vel * ((1 - abs(error) / 500) ** 2.2), 0.05)
+        twist.linear.x = self.max_vel * ((1 - abs(error) / 500) ** 2.2)
         twist.linear.y = 0
         twist.linear.z = 0
         twist.angular.x = 0
@@ -41,7 +44,7 @@ class TurtlebotController:
 
         self.pub_cmd_vel.publish(twist)
 
-    def fnShutDown(self):
+    def stop(self):
         rospy.loginfo("Shutting down. cmd_vel will be 0")
 
         twist = Twist()
@@ -63,7 +66,6 @@ class TurtlebotController:
         # plt.show()
 
         self.pub_cmd_vel.publish(twist)
-        self.save_errors()
 
     def save_errors(self):
         np.save("errors.npy", self.errors)

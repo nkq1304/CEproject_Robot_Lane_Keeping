@@ -22,7 +22,7 @@ class LaneTracking:
         self.left_lane = None
         self.right_lane = None
 
-    def track(self, frame, lanes: List[LaneLine]) -> float:
+    def track(self, frame, lanes: List[LaneLine]) -> LaneLine:
         self.tracking_lanes_v2(lanes)
         self.process_center_lane(self.left_lane, self.right_lane)
 
@@ -32,7 +32,7 @@ class LaneTracking:
 
         self.frame_debugger(mask_frame)
 
-        return self.center_lane.dist if self.center_lane is not None else 0
+        return self.center_lane
 
     def tracking_lanes_v1(self, lanes: List[LaneLine]) -> None:
         # Get left and right lane

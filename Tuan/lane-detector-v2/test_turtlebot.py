@@ -1,7 +1,7 @@
 import rospy
 import cv2
 
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import Image, CompressedImage
 from cv_bridge import CvBridge
 
 from utils.config import Config
@@ -12,10 +12,10 @@ from modules.controller.turtlebot_controller import TurtlebotController
 
 
 def image_callback(data):
-    frame = bridge.imgmsg_to_cv2(data, "bgr8")
+    frame = bridge.compressed_imgmsg_to_cv2(data, "bgr8")
 
-    deviation = backend.update(frame)
-    turtlebot_controller.cbFollowLane(deviation)
+    center_lane = backend.update(frame)
+    turtlebot_controller.follow_lane(center_lane)
 
 
 def on_shutdown():
@@ -32,7 +32,7 @@ if __name__ == "__main__":
     bridge = CvBridge()
 
     rospy.init_node("get_image", anonymous=True)
-    rospy.Subscriber("/camera/image", Image, image_callback)
+    rospy.Subscriber("/camera/image/compressed", CompressedImage, image_callback)
 
     ImagePublisher()
 
