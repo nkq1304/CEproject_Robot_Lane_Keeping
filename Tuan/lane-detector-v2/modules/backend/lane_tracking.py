@@ -102,15 +102,20 @@ class LaneTracking:
             # If both lanes are missing
             self.left_lane, self.right_lane = self.process_lanes(lanes)
         else:
+            # TODO: Fix this. This part is for demo only
             # Find nearest lanes
-            self.left_lane = self.find_nearest_lane(self.left_lane, lanes)
-            self.right_lane = self.find_nearest_lane(self.right_lane, lanes)
+            left_lane = self.find_nearest_lane(self.left_lane, lanes)
+            right_lane = self.find_nearest_lane(self.right_lane, lanes)
 
             # Shift lanes if one lane is missing
-            if self.left_lane is None:
+            if left_lane is None and right_lane is not None:
                 self.left_lane = self.shift_lane(self.right_lane, -self.center_dist * 2)
-            elif self.right_lane is None:
+            elif right_lane is None and left_lane is not None:
                 self.right_lane = self.shift_lane(self.left_lane, self.center_dist * 2)
+            elif left_lane is not None and right_lane is not None:
+                # If both lanes are found
+                self.left_lane = left_lane
+                self.right_lane = right_lane
 
     def process_lanes(self, lanes: List[LaneLine]) -> Tuple[LaneLine, LaneLine]:
         if len(lanes) == 0:
