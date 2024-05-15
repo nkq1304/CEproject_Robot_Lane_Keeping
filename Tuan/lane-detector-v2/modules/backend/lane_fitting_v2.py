@@ -207,11 +207,7 @@ class LaneFittingV2:
 
     def pre_processing(self, frame) -> np.ndarray:
         binary_frame = np.copy(frame)
-
-        # Pre-processing
         binary_frame = cv.cvtColor(binary_frame, cv.COLOR_BGR2GRAY)
-        binary_frame = cv.GaussianBlur(binary_frame, (5, 5), 0)
-        binary_frame = cv.threshold(binary_frame, 60, 255, cv.THRESH_BINARY)[1]
 
         return binary_frame
 
