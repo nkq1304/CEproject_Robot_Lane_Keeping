@@ -17,6 +17,7 @@ class LaneTracking:
     def __init__(self, config: dict) -> None:
         self.center_dist = config["center_dist"]
         self.max_dist_diff = config["max_dist_diff"]
+        self.max_angle_diff = config["max_angle_diff"]
 
         self.center_lane = None
         self.left_lane = None
@@ -104,18 +105,14 @@ class LaneTracking:
         else:
             # TODO: Fix this. This part is for demo only
             # Find nearest lanes
-            left_lane = self.find_nearest_lane(self.left_lane, lanes)
-            right_lane = self.find_nearest_lane(self.right_lane, lanes)
+            self.left_lane = self.find_nearest_lane(self.left_lane, lanes)
+            self.right_lane = self.find_nearest_lane(self.right_lane, lanes)
 
             # Shift lanes if one lane is missing
-            if left_lane is None and right_lane is not None:
+            if self.left_lane is None:
                 self.left_lane = self.shift_lane(self.right_lane, -self.center_dist * 2)
-            elif right_lane is None and left_lane is not None:
+            elif self.right_lane is None:
                 self.right_lane = self.shift_lane(self.left_lane, self.center_dist * 2)
-            elif left_lane is not None and right_lane is not None:
-                # If both lanes are found
-                self.left_lane = left_lane
-                self.right_lane = right_lane
 
     def process_lanes(self, lanes: List[LaneLine]) -> Tuple[LaneLine, LaneLine]:
         if len(lanes) == 0:
@@ -191,12 +188,18 @@ class LaneTracking:
         nearest_lane = lanes[0]
 
         for lane in lanes:
-            if abs(target_lane.dist - lane.dist) < abs(
-                target_lane.dist - nearest_lane.dist
-            ):
+            dist_diff = abs(target_lane.dist - lane.dist)
+            nearest_dist_diff = abs(target_lane.dist - nearest_lane.dist)
+            angle_diff = abs(target_lane.get_angle() - lane.get_angle())
+
+            if dist_diff < nearest_dist_diff and angle_diff < self.max_angle_diff:
                 nearest_lane = lane
 
-        if abs(nearest_lane.dist - target_lane.dist) > self.max_dist_diff:
+        if (
+            abs(nearest_lane.dist - target_lane.dist) > self.max_dist_diff
+            or abs(nearest_lane.get_angle() - target_lane.get_angle())
+            > self.max_angle_diff
+        ):
             return None
 
         return nearest_lane
