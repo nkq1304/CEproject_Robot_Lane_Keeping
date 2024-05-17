@@ -3,9 +3,9 @@ import cv2 as cv
 
 from typing import List
 
-from utils.lane_line import LaneLine
 from utils.window import Window
-
+from utils.tracker import Tracker
+from utils.lane_line import LaneLine
 from utils.visualize import draw_lane, draw_window
 
 from modules.backend.image_publisher import ImagePublisher
@@ -33,6 +33,8 @@ class LaneFittingV2:
         self.lane_max_width = config["lane"].get("max_width", 100)
         self.max_lanes = config["lane"].get("max_lanes", 2)
 
+        self.tracker = Tracker("Lane Fitting")
+
     def window_start(self, frame) -> None:
         self.frame = frame
         self.viz_frame = frame.copy()
@@ -48,6 +50,8 @@ class LaneFittingV2:
         self.nonzero_pixel_y = np.array(np.nonzero(self.binary_frame)[0])
 
     def fit(self, frame) -> List[LaneLine]:
+        self.tracker.start()
+
         self.window_start(frame)
 
         pixel_index_on_any_lane = np.array([], dtype=np.int64)
@@ -87,6 +91,7 @@ class LaneFittingV2:
 
         lanes.sort(key=lambda lane: lane.dist)
 
+        self.tracker.end()
         self.visualize(lanes)
 
         return lanes

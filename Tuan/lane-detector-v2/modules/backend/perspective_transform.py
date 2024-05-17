@@ -3,6 +3,7 @@ import numpy as np
 
 from modules.backend.image_publisher import ImagePublisher
 
+
 class PerspectiveTransform:
     src = None
     dst = None
@@ -22,7 +23,7 @@ class PerspectiveTransform:
 
         if debug:
             self.visualize(img)
-            
+
         return cv.warpPerspective(img, self.M, img_size, flags=cv.INTER_LINEAR)
 
     @staticmethod

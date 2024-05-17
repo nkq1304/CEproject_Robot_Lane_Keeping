@@ -10,15 +10,10 @@ from modules.backend.lane_tracking import LaneTracking
 from modules.backend.perspective_transform import PerspectiveTransform
 
 from utils.config import Config
-
-global prev_frame_time
-global new_frame_time
-
-prev_frame_time = 0
-new_frame_time = 0
+from utils.tracker import Tracker
 
 
-def process_frame(frame, lane_frame):
+def process_frame(frame, lane_frame) -> None:
     # Image transformation
     frame = image_transform.transform(frame)
 
@@ -33,38 +28,19 @@ def process_frame(frame, lane_frame):
     lane_tracking.track(warp_frame, lanes)
 
 
-def update(frame, lane_frame):
-    global prev_frame_time
-    global new_frame_time
-
+def update(frame, lane_frame) -> None:
     frame = cv2.resize(frame, (640, 360))
     FrameDebugger.update(frame)
 
-    start_fps()
-    dist = process_frame(frame, lane_frame)
-    fps = end_fps()
+    backend_tracker.start()
+    process_frame(frame, lane_frame)
+    backend_tracker.end()
 
-    FrameDebugger.draw_text(f"{fps:.0f}", (610, 20), (255, 255, 255))
+    FrameDebugger.draw_text(f"{backend_tracker.fps():.0f}", (610, 20), (255, 255, 255))
     FrameDebugger.show()
 
-    return dist
 
-
-def start_fps():
-    global new_frame_time
-    new_frame_time = time.time()
-
-
-def end_fps():
-    global prev_frame_time
-    global new_frame_time
-    fps = 1 / (new_frame_time - prev_frame_time)
-    prev_frame_time = new_frame_time
-
-    return fps
-
-
-def arg_parse():
+def arg_parse() -> ArgumentParser:
     parser = ArgumentParser()
     parser.add_argument(
         "--config",
@@ -79,6 +55,8 @@ def arg_parse():
 if __name__ == "__main__":
     args = arg_parse()
     cfg = Config(args.config)
+
+    backend_tracker = Tracker("Backend")
 
     image_transform = ImageTransform(cfg.image_transform)
     perspective_transform = PerspectiveTransform(cfg.perspective_transform)

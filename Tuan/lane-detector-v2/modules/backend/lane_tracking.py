@@ -3,14 +3,15 @@ import cv2
 
 from typing import List, Tuple
 
-from modules.backend.perspective_transform import PerspectiveTransform
+from utils.tracker import Tracker
 from utils.lane_line import LaneLine
-from exceptions.lane import LeftLineNotFound, RightLineNotFound, LaneNotFound
+from utils.visualize import draw_lane
 
 from modules.backend.frame_debugger import FrameDebugger
 from modules.backend.image_publisher import ImagePublisher
+from modules.backend.perspective_transform import PerspectiveTransform
 
-from utils.visualize import draw_lane
+from exceptions.lane import LeftLineNotFound, RightLineNotFound, LaneNotFound
 
 
 class LaneTracking:
@@ -23,7 +24,11 @@ class LaneTracking:
         self.left_lane = None
         self.right_lane = None
 
+        self.tracker = Tracker("Lane Tracking")
+
     def track(self, frame, lanes: List[LaneLine]) -> LaneLine:
+        self.tracker.start()
+
         self.tracking_lanes_v2(lanes)
         self.process_center_lane(self.left_lane, self.right_lane)
 
@@ -31,6 +36,7 @@ class LaneTracking:
             frame, self.left_lane, self.right_lane, self.center_lane
         )
 
+        self.tracker.end()
         self.frame_debugger(mask_frame)
 
         return self.center_lane

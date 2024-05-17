@@ -1,16 +1,14 @@
 import cv2
-import time
 
-from utils.config import Config
+from utils.tracker import Tracker
 from utils.lane_line import LaneLine
 
-from modules.backend.image_transform import ImageTransform
-from modules.backend.perspective_transform import PerspectiveTransform
-from modules.backend.lane_fitting_v2 import LaneFittingV2
 from modules.backend.lane_detector import LaneDetector
 from modules.backend.lane_tracking import LaneTracking
-
 from modules.backend.frame_debugger import FrameDebugger
+from modules.backend.image_transform import ImageTransform
+from modules.backend.lane_fitting_v2 import LaneFittingV2
+from modules.backend.perspective_transform import PerspectiveTransform
 
 
 class Backend:
@@ -21,31 +19,20 @@ class Backend:
         self.lane_detector = LaneDetector(cfg.lane_detector)
         self.lane_tracking = LaneTracking(cfg.lane_tracking)
 
-        self.prev_frame_time = 0
-        self.new_frame_time = 0
+        self.tracker = Tracker("Backend")
 
     def update(self, frame) -> LaneLine:
         frame = cv2.resize(frame, (640, 360))
         FrameDebugger.update(frame)
 
-        self.start_fps()
+        self.tracker.start()
         center_lane = self.process_frame(frame)
+        self.tracker.end()
 
-        fps = self.end_fps()
-
-        FrameDebugger.draw_text(f"{fps:.0f}", (610, 20), (255, 255, 255))
+        FrameDebugger.draw_text(f"{self.tracker.fps():.0f}", (610, 20), (255, 255, 255))
         FrameDebugger.show()
 
         return center_lane
-
-    def start_fps(self):
-        self.new_frame_time = time.time()
-
-    def end_fps(self):
-        fps = 1 / (self.new_frame_time - self.prev_frame_time)
-        self.prev_frame_time = self.new_frame_time
-
-        return fps
 
     def process_frame(self, frame) -> LaneLine:
         # # Image transformation

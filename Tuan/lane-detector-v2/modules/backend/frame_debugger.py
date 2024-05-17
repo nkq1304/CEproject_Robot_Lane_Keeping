@@ -1,7 +1,8 @@
 import cv2 as cv
 
-from exceptions.lane import LaneException
 from utils.lane_line import LaneLine
+
+from exceptions.lane import LaneException
 
 from modules.backend.image_publisher import ImagePublisher
 

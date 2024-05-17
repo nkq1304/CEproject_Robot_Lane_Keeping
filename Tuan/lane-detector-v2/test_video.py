@@ -6,7 +6,7 @@ from modules.backend.backend import Backend
 from argparse import ArgumentParser
 
 
-def parse_args():
+def parse_args() -> ArgumentParser:
     parser = ArgumentParser()
     parser.add_argument(
         "--config",

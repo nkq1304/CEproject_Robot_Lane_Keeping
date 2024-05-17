@@ -3,6 +3,8 @@ import numpy as np
 from model import TwinLite as net
 import cv2
 
+
+from utils.tracker import Tracker
 from modules.backend.image_publisher import ImagePublisher
 
 
@@ -13,6 +15,7 @@ class LaneDetector:
         self.save_video = config["save_video"]
 
         self.cuda = torch.cuda.is_available()
+        self.tracker = Tracker("Lane Detector")
 
         self.create_video_writer()
         self.load_model(config["model_path"])
@@ -39,6 +42,8 @@ class LaneDetector:
         self.model.eval()
 
     def detect(self, img):
+        self.tracker.start()
+
         img = cv2.resize(img, (640, 360))
         img_copy = img.copy()
 
@@ -68,6 +73,7 @@ class LaneDetector:
 
         binary_img[LL > 100] = [255, 255, 255]
 
+        self.tracker.end()
         self.visualize(img_copy, LL)
         self.save_lane_video(binary_img)
 
