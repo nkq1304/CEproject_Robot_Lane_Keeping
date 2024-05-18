@@ -10,7 +10,7 @@ from modules.backend.lane_tracking import LaneTracking
 from modules.backend.perspective_transform import PerspectiveTransform
 
 from utils.config import Config
-from utils.tracker import Tracker
+from utils.tracker import Tracker, TrackerManager
 
 
 def process_frame(frame, lane_frame) -> None:
@@ -76,4 +76,5 @@ if __name__ == "__main__":
             break
 
         if cv2.waitKey(1) & 0xFF == ord("q"):
+            TrackerManager.stop()
             break

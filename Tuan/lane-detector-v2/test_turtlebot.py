@@ -5,6 +5,7 @@ from sensor_msgs.msg import Image, CompressedImage
 from cv_bridge import CvBridge
 
 from utils.config import Config
+from utils.tracker import TrackerManager
 
 from modules.backend.backend import Backend
 from modules.backend.image_publisher import ImagePublisher
@@ -19,7 +20,7 @@ def image_callback(data):
 
 
 def on_shutdown():
-    print("Shutting down")
+    TrackerManager.stop()
     cv2.destroyAllWindows()
 
 

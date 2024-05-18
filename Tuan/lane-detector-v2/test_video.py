@@ -1,6 +1,8 @@
 import cv2
 
 from utils.config import Config
+from utils.tracker import TrackerManager
+
 from modules.backend.backend import Backend
 
 from argparse import ArgumentParser
@@ -36,4 +38,5 @@ if __name__ == "__main__":
             break
 
         if cv2.waitKey(1) & 0xFF == ord("q"):
+            TrackerManager.stop()
             break

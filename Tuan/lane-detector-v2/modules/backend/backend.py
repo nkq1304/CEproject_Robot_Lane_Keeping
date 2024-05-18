@@ -13,13 +13,14 @@ from modules.backend.perspective_transform import PerspectiveTransform
 
 class Backend:
     def __init__(self, cfg) -> None:
+        self.tracker = Tracker("Backend")
+
         self.image_transform = ImageTransform(cfg.image_transform)
         self.perspective_transform = PerspectiveTransform(cfg.perspective_transform)
-        self.lane_fitting = LaneFittingV2(cfg.lane_fitting)
-        self.lane_detector = LaneDetector(cfg.lane_detector)
-        self.lane_tracking = LaneTracking(cfg.lane_tracking)
 
-        self.tracker = Tracker("Backend")
+        self.lane_detector = LaneDetector(cfg.lane_detector)
+        self.lane_fitting = LaneFittingV2(cfg.lane_fitting)
+        self.lane_tracking = LaneTracking(cfg.lane_tracking)
 
     def update(self, frame) -> LaneLine:
         frame = cv2.resize(frame, (640, 360))
