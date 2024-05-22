@@ -31,7 +31,7 @@ class TurtlebotController:
         self.lastError = error
 
         twist = Twist()
-        twist.linear.x = max(0, self.max_vel * ((1 - abs(error) / 100) ** 2.2))
+        twist.linear.x = max(0, self.max_vel * ((1 - abs(error) / 500) ** 2.2))
         twist.linear.y = 0
         twist.linear.z = 0
         twist.angular.x = 0
