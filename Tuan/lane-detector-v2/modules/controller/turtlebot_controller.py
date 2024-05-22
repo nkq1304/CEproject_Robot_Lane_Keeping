@@ -16,6 +16,8 @@ class TurtlebotController:
         self.Kp = cfg["Kp"]
         self.Kd = cfg["Kd"]
 
+        self.lastError = 0
+
         rospy.on_shutdown(self.stop)
 
     def follow_lane(self, lane: LaneLine):
@@ -26,9 +28,10 @@ class TurtlebotController:
         error = lane.dist
 
         angular_z = self.Kp * error + self.Kd * (error - self.lastError)
+        self.lastError = error
 
         twist = Twist()
-        twist.linear.x = self.max_vel * ((1 - abs(error) / 500) ** 2.2)
+        twist.linear.x = max(0, self.max_vel * ((1 - abs(error) / 100) ** 2.2))
         twist.linear.y = 0
         twist.linear.z = 0
         twist.angular.x = 0
